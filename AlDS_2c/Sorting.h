@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
-
+#include <vector>
+#include <iostream>
 
 struct stats {
     size_t comparison_count = 0;
@@ -9,7 +10,7 @@ struct stats {
 
 /*
     summary
-    Сортировка вставками, алгоритмическая сложность ........
+    Insert Sort
     /summary
 */
 template <class T, class TComparator = std::less<T>>
@@ -31,7 +32,7 @@ stats InsertSort(std::vector<T>& arr)
 /*
     summary
     Быстрая сортировка, алгоритмическая сложность ........
-    middleElem - МОЖЕТ МЕНЯТЬСЯ в процессе сортировки, на этом могут валить (:
+    middleElem - maybe change
     /summary
 */
 template <class T, class TComparator = std::less <T>>
@@ -65,10 +66,9 @@ stats QuickSort(std::vector<T>& arr, int left, int right)
     return tmp;
 };
 
-
 /*
     summary
-    Сортировка расческой, алгоритмическая сложность ........
+    Comb Sort
     /summary
 */
 template <class T, class TComparator = std::less <T>>
@@ -93,7 +93,13 @@ stats CombSort(std::vector<T>& arr) {  //расческа
     return tmp;
 }
 
-stats Shell_Sort(std::vector<int>& data)
+/*
+    summary
+    Shell Sort
+    /summary
+*/
+template <class T, class TComparator = std::less<T>>
+stats ShellSort(std::vector<T>& data)
 {
     stats stat;
     for (size_t d = data.size() / 2; d > 0; d /= 2)
@@ -101,14 +107,247 @@ stats Shell_Sort(std::vector<int>& data)
         for (size_t i = d; i < data.size(); ++i)
         {
             stat.comparison_count++;
-            for (int j = i - d; j >= 0 && data[j] > data[j + d]; j -= d)
+            for (size_t j = i - d; j >= 0 && TComparator()(data[j+d],data[j]); j -= d)
             {
-                int temp = data[j];
-                data[j] = data[j + d];
-                data[j + d] = temp;
+                std::swap(data[j], data[j + d]);
+                //int temp = data[j];      data[j] > data[j + d]
+                //data[j] = data[j + d];
+                //data[j + d] = temp;
                 stat.copy_count++;
             }
         }
     }
     return stat;
+}
+
+/*
+    summary
+    BubbleSort, const - O(N^2)
+    /summary
+*/
+template <class T, class TComparator = std::less<T>>
+stats BubbleSort(std::vector<T>& data)
+{
+    stats stat;
+    for (size_t i = 0; i < data.size() - 1; i++)
+    {
+        for (size_t j = 0; j < data.size() - i - 1; j++)
+        {
+            stat.comparison_count++;
+            if (TComparator()(data[j + 1], data[j]))
+            {
+                std::swap(data[j + 1], data[j]);
+                //int temp = data[j + 1];
+                //data[j + 1] = data[j];
+                //data[j] = temp;
+                stat.copy_count++;
+            }
+        }
+    }
+    return stat;
+}
+
+/*
+    summary
+    Two-Way Merge Sort
+    /summary
+*/
+template <class T, class TComparator = std::less<T>>
+stats TwoWayMergeSort(std::vector<T>& data)
+{
+    stats stat;
+    std::vector<int> res(data.size());
+    size_t resl = 0;
+    size_t resr = res.size() - 1;
+    size_t podsize = 2;
+    while (true)
+    {
+        size_t resl = 0; // Левая граница неотсортированной последовательности в res
+        size_t resr = res.size() - 1; // Правая граница неотсортированной последовательности в res
+        bool left = true;
+        size_t vecl = 0; // Индекс левой границы неотсортированной последовательности в data
+        size_t vecr = data.size() - 1; // Индекс правой границы неотсортированной последовательности в data
+        while (vecl < vecr)
+        {
+            size_t i = vecl;
+            size_t j = vecr;
+            while (vecl <= vecr && TComparator()(data[vecl], data[vecl + 1]))
+            {
+                stat.comparison_count++;
+                vecl++;
+                podsize++;
+                if (vecl == res.size() - 1) return stat;
+            }
+            while (vecl <= vecr && TComparator()(data[vecr], data[vecr - 1]))
+            {
+                stat.comparison_count++;
+                vecr--;
+                podsize++;
+            }
+            if (left)
+            {
+                for (size_t p = 0; p < podsize; ++p)
+                {
+                    if (i <= vecl)
+                    {
+                        if (j < vecr) // Если вся правая подпоследовательность уже перебрана, то поочередно записываем левую последовательность
+                        {
+                            res[resl] = data[i];
+                            stat.copy_count++;
+                            resl++;
+                            i++;
+                            continue;
+                        }
+                        else if (data[i] < data[j]) //Если правая подпоследовательность не целиком рассмотрена, то нужно сравнивать
+                        {
+                            stat.comparison_count++;
+                            res[resl] = data[i];
+                            stat.copy_count++;
+                            resl++;
+                            i++;
+                            continue;
+                        }
+                        else if (i == j)
+                        {
+                            res[resl] = data[i];
+                            stat.copy_count++;
+                            break;
+                        }
+                    }
+                    if (j >= vecr)
+                    {
+                        if (i > vecl) // Вся левая подпоследовательность рассмотрена
+                        {
+                            res[resl] = data[j];
+                            stat.copy_count++;
+                            resl++;
+                            j--;
+                            continue;
+                        }
+                        else if (data[j] < data[i]) //Если левая подпоследовательность не целиком рассмотрена, то нужно сравнивать
+                        {
+                            stat.comparison_count++;
+                            res[resl] = data[j];
+                            stat.copy_count++;
+                            resl++;
+                            j--;
+                            continue;
+                        }
+                        else if (i == j)
+                        {
+                            res[resl] = data[i];
+                            stat.copy_count++;
+                            break;
+                        }
+                    }
+                }
+                left = !left;
+            }
+            else {
+                for (size_t p = 0; p < podsize; ++p)
+                {
+                    if (i <= vecl)
+                    {
+                        if (j < vecr) // Если вся правая подпоследовательность уже перебрана, то поочередно записываем левую последовательность
+                        {
+                            res[resr] = data[i];
+                            stat.copy_count++;
+                            resr--;
+                            i++;
+                            continue;
+                        }
+                        else if (data[i] < data[j]) //Если правая подпоследовательность не целиком рассмотрена, то нужно сравнивать
+                        {
+                            stat.comparison_count++;
+                            res[resr] = data[i];
+                            stat.copy_count++;
+                            resr--;
+                            i++;
+                            continue;
+                        }
+                        else if (i == j)
+                        {
+                            res[resl] = data[i];
+                            stat.copy_count++;
+                            break;
+                        }
+                    }
+                    if (j >= vecr && data[j] < data[i])
+                    {
+                        stat.comparison_count++;
+                        if (i > vecl) // Вся левая подпоследовательность рассмотрена
+                        {
+                            res[resr] = data[j];
+                            stat.copy_count++;
+                            resr--;
+                            j--;
+                            continue;
+                        }
+                        else if (data[j] < data[i]) //Если левая подпоследовательность не целиком рассмотрена, то нужно сравнивать
+                        {
+                            stat.comparison_count++;
+                            res[resr] = data[j];
+                            stat.copy_count++;
+                            resr--;
+                            j--;
+                            continue;
+                        }
+                        else if (i == j)
+                        {
+                            res[resl] = data[i];
+                            stat.copy_count++;
+                            break;
+                        }
+                    }
+                }
+                left = !left;
+            }
+            vecl++;
+            vecr--;
+        }
+        data = res;
+        for (size_t k = 0; k < res.size(); k++) res[k] = 0;
+    }
+    return stat;
+}
+
+/*
+    summary
+    Shaker Sort
+    /summary
+*/
+template <class T, class TComparator = std::less<T>>
+stats ShakerSort(std::vector<T>& data) //n^2
+{
+    stats shaker;
+
+    size_t beyond = data.size() - 1;
+    size_t left = 0;
+    size_t right = data.size() - 1;
+    do {
+        for (size_t i = left; i < right; i++)
+        {
+            shaker.comparison_count++;
+            if (TComparator()(data[i+1],data[i]))
+            { //data[i] > data[i + 1]
+                std::swap(data[i], data[i + 1]);
+                beyond = i;
+                shaker.copy_count++;
+            }
+        }
+        right = beyond;
+        for (size_t i = right; i > left; i--)
+        {
+            shaker.comparison_count++;
+            if (TComparator()(data[i], data[i-1]))
+            {
+                std::swap(data[i], data[i - 1]);
+                beyond = i;
+                shaker.copy_count++;
+            }
+        }
+        left = beyond;
+        shaker.comparison_count++;
+    } while (left < right);
+    return shaker;
 }
