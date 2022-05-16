@@ -9,8 +9,9 @@ struct Data {
 
 	int _weight;
 
-	Data() : _weight(0) {};
-	Data(int weight, int fare) : _weight(weight) {};
+	Data() : _weight(0), FirstIdVertex(0), SecondIdVertex(0) {};
+	Data(int weight, int firstIdVertex, int secondIdVertex) : _weight(weight), FirstIdVertex(firstIdVertex),
+																			SecondIdVertex(secondIdVertex) {};
 };
 
 class Edge {
@@ -46,6 +47,10 @@ public:
 	int GetFirstVertexId() const { return _data.FirstIdVertex; }
 	int GetSecondVertexId() const { return _data.SecondIdVertex; }
 
+	bool operator==(const Edge& rhs) const {
+		return true;
+	}
+
 	//int GetWeightById() const { return _data._weight; }
 
 };
@@ -53,18 +58,22 @@ public:
 class Vertex {
 private:
 	std::vector<Edge> _arrayEdge;
-	int _id;
-	int _size;			//  ќЋ»„≈—“¬ќ »—’ќƒяў»’ –≈Ѕ≈–
+	size_t _id;
+	size_t _size;			//  ќЋ»„≈—“¬ќ »—’ќƒяў»’ –≈Ѕ≈–
 
 public:
 	Vertex() {
 		_id = 0;
 		_size = 0;
 	}
+	Vertex(const size_t id) {
+		_id = id;
+		_size = 0;
+	}
 
-	int GetId() const { return _id; }		// получение id вершины
+	size_t GetId() const { return _id; }		// получение id вершины
 	size_t EdgeCount() const { return _size; }	// размер получаем
-	Edge GetEdgeById(const int id) { return _arrayEdge[id]; }
+	Edge GetEdgeById(const size_t id) { return _arrayEdge[id]; }
 
 	bool AddEdge(const Vertex& secondVertex) {
 		auto newEdge = Edge(_id, secondVertex._id);
@@ -84,7 +93,7 @@ public:
 		_arrayEdge.erase(iterDeleted, iterDeleted.operator++());
 	}
 
-	const bool operator==(const Vertex& rhs) const {
+	bool operator==(const Vertex& rhs) const {
 		return true;
 	}
 
@@ -100,11 +109,13 @@ private:
 public:
 	Graph() {
 		_size = 0;
+		_matr = nullptr;
 	}
 
 	Graph(const int size) {
-		_arrayVertex.resize(size);
+		//_arrayVertex.resize(size);
 		_size = size;
+		_matr = nullptr;
 	}
 
 	size_t CountVertex() const {
@@ -116,11 +127,11 @@ public:
 			size += _arrayVertex[i].EdgeCount();
 		}
 	}
-	int FindMax() const {			// зачем это € так и не пон€ла
-		int max = -1;
-		int id = 0;
+	size_t FindMax() const {			// зачем это € так и не пон€ла
+		size_t max = -1;
+		size_t id = 0;
 
-		for (int i = 0; i < _size; i++) {
+		for (size_t i = 0; i < _size; i++) {
 			if (_arrayVertex[i].EdgeCount() > max) {
 				max = _arrayVertex[i].EdgeCount();
 				id = i;
@@ -128,6 +139,15 @@ public:
 		}
 
 		return id;
+	}
+	size_t FindById(const int id) const {
+		for (size_t i = 0; i < _size; i++) {
+			if (_arrayVertex[i].GetId() == id)
+				return i;
+		}
+		return -1;
+		// or 
+		//throw(std::logic_error("Not found"));
 	}
 
 	bool FillImagineMatrix() {
@@ -142,10 +162,14 @@ public:
 			}
 		}
 
-		for (int i = 0; i < _size; i++) {
-			for (int j = 0; j < _arrayVertex[i].EdgeCount(); i++) {
-				auto edge = _arrayVertex[i].GetEdgeById(i);
-				_matr[edge.GetFirstVertexId()][edge.GetSecondVertexId()] = edge.Weight();
+		for (size_t i = 0; i < _size; i++) {
+			for (size_t j = 0; j < _arrayVertex[i].EdgeCount(); j++) {
+				auto edge = _arrayVertex[i].GetEdgeById(j);
+
+				int elemOne = edge.GetFirstVertexId();
+				int elemTwo = edge.GetSecondVertexId();
+				int weight = edge.Weight();
+				_matr[elemOne][elemTwo] = weight;
 			}
 		}
 
@@ -165,21 +189,15 @@ public:
 
 	bool AddVertex(const Vertex& newVertex) {
 		_arrayVertex.push_back(newVertex);
+		return true;
+	}
+
+	bool AddEdge(const Edge& newEdge) {		// мне кажетс€ костыльно ................
+		// проверить существуют ли ребра и хранит ли это ребро какую либо инф-цию
+		_arrayVertex[FindById(newEdge.GetFirstVertexId())].AddEdge(newEdge.GetData());
 
 		return true;
 	}
-	bool AddEdge(const Edge& newEdge) {		// мне кажетс€ костыльно ................
-		// проверить существуют ли ребра и хранит ли это ребро какую либо инф-цию
-
-		auto iterFirstVertx = std::find(_arrayVertex.begin(), _arrayVertex.end(), newEdge.GetFirstVertexId());
-		if (iterFirstVertx == _arrayVertex.end())
-			throw(std::logic_error("Not found First Vertex"));
-
-		int index = std::distance(_arrayVertex.begin(), iterFirstVertx);
-		_arrayVertex[index].AddEdge(newEdge.GetData());
-		
-	}
-
 
 };
 
