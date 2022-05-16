@@ -74,6 +74,7 @@ public:
 	size_t GetId() const { return _id; }		// получение id вершины
 	size_t EdgeCount() const { return _size; }	// размер получаем
 	Edge GetEdgeById(const size_t id) { return _arrayEdge[id]; }
+	const std::vector<Edge>& GetEdge() const { return _arrayEdge; }
 
 	bool AddEdge(const Vertex& secondVertex) {
 		auto newEdge = Edge(_id, secondVertex._id);
@@ -94,6 +95,14 @@ public:
 	}
 
 	bool operator==(const Vertex& rhs) const {
+
+		if (_size != rhs._size)
+			return false;
+
+		for (size_t i = 0; i < _size; i++) {
+			// TO DO
+		}
+
 		return true;
 	}
 
@@ -199,5 +208,34 @@ public:
 		return true;
 	}
 
+
+	bool SearchWay(const int from, const int where) const {
+
+		if (from == where)
+			return true;
+
+		auto id = FindById(from);
+		auto edgeList = _arrayVertex[id].GetEdge();
+
+		for (size_t i = 0; i < edgeList.size(); i++) {
+			return SearchWay(edgeList[i].GetSecondVertexId(), where);
+		}
+
+		return false;
+	}
+
 };
 
+/*9
+		if (from.GetId() == where.GetId())
+			return true;
+
+		size_t id = FindById(from.GetId());
+
+		for (size_t i = 0; i < _arrayVertex[id].EdgeCount(); i++) {
+
+			auto vertex = _arrayVertex[id].GetEdge()[i];
+
+			SearchWay(, where);  //from.GetEdge()[i].GetSecondVertexId()
+		}
+*/
