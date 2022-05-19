@@ -3,7 +3,6 @@
 #include <queue>
 #include <string>
 
-
 #pragma once
 
 /*
@@ -68,7 +67,7 @@ std::ostream& operator<< (std::ostream& out, const City& rhs) {
 /*
 	summary
 	This class is an example of a graph edge
-	The minimum information on the task is the name of the city and the count of people
+	The minimum information on the task is the status road
 	methods: gets/sets, =, >>, <<
 	/summary
 */
@@ -107,6 +106,16 @@ public:
 	void SetPriceRoad(const double priceRoad) { _priceRoad = priceRoad; }
 	void SetRoadType(const RoadType roadType) { _roadType = roadType; }
 	void SetNameRoad(const std::string nameRoad) { _nameRoad = nameRoad; }
+
+	Road& operator=(const Road& rhs) {
+		if (this == &rhs)
+			return *this;
+		_weight = rhs._weight;
+		_priceRoad = rhs._priceRoad;
+		_nameRoad = rhs._nameRoad;
+		_roadType = rhs._roadType;
+		return *this;
+	}
 };
 
 std::istream& operator>> (std::istream& in, Road& rhs) {
@@ -143,15 +152,97 @@ std::ostream& operator<< (std::ostream& out, const Road& rhs) {
 	return out;
 }
 
+/*
+	summary
+
+	/summary
+*/
+
+template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
+class Way {
+	TVertex _from;
+	TVertex _where;
+	TEdge _edge;
+
+public:
+	Way() : _from(TVertex()), _where(TVertex()), _edge(TEdge()) {};
+	Way(TVertex from, TVertex whereVertex, TEdge edge) : _from(from), _where(whereVertex), _edge(edge) {};
+
+	TVertex GetFirstVertex() const { return _from; }
+	TVertex GetSecondVertex() const { return _where; }
+	TEdge GetEdge() const { return _edge; }
+
+	void SetFirstVertex(TVertex from) { _from = from; }
+	void SetSecondVertex(TVertex whereVertex) { _where = whereVertex; }
+	void SetEdge(TEdge edge) { _edge = edge; }
+
+	Way& operator=(const Way& rhs) {
+		if (this == &rhs)
+			return *this;
+		_from = rhs._from;
+		_where = rhs._where;
+		_edge = rhs._edge;
+		return *this;
+	}
+
+	bool operator==(const Way& rhs) const {
+		TEqual equal;
+		return equal(_from, rhs._from) && equal(_where, rhs._where);
+	}
+	bool operator!=(const Way& rhs) const {
+		return !(this == rhs);
+	}
+
+};
+
+template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
+std::istream& operator>> (std::istream& in, Way<TVertex, TEdge, TEqual>& rhs) {
+	TVertex a, b;
+	TEdge e;
+
+	std::cout << "First vertex: ";
+	in >> a;
+	std::cout << "Second vertex: ";
+	in >> b;
+	std::cout << "Edge: ";
+	in >> e;
+
+	rhs.SetFirstVertex(a);
+	rhs.SetSecondVertex(b);
+	rhs.SetEdge(e);
+
+	return in;
+}
+
+
+template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
+std::ostream& operator<< (std::ostream& out, const Way<TVertex, TEdge, TEqual>& rhs) {
+	std::cout << "First vertex: ";
+	out << rhs.GetFirstVertex();
+	std::cout << "\nSecond vertex: ";
+	out << rhs.GetSecondVertex();
+	std::cout << "\nEdge: ";
+	out << rhs.GetEdge();
+	return out;
+}
+
+template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
+class Graph {
+
+};
+
+
+
 
 template<>
 struct std::equal_to<City>
 {
 	size_t operator()(const City& lhs, const City& rhs) const
 	{
-		return ((lhs.GetCityName() == rhs.GetCityName()) && rhs.GetCountPeople() == rhs.GetCountPeople());
+		return (lhs.GetCityName() == rhs.GetCityName()) && rhs.GetCountPeople() == rhs.GetCountPeople();
 	}
 };
+
 template<>
 struct std::equal_to<Road>
 {
