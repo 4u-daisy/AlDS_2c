@@ -17,6 +17,7 @@ class City {
 private:
 	std::string _cityName;
 	unsigned int _countOfPeople;
+	std::vector<int> _roads;
 
 public:
 	City() : _cityName("defaultName"), _countOfPeople(0) {};
@@ -63,7 +64,6 @@ std::ostream& operator<< (std::ostream& out, const City& rhs) {
 	return out;
 }
 
-
 /*
 	summary
 	This class is an example of a graph edge
@@ -83,7 +83,6 @@ private:
 	double _weight;
 	double _priceRoad;
 	RoadType _roadType;
-
 	std::string _nameRoad;
 
 public:
@@ -140,7 +139,7 @@ std::istream& operator>> (std::istream& in, Road& rhs) {
 		rhs.SetRoadType(priming);
 	if (roadType == 3)
 		rhs.SetRoadType(earth);
-	
+
 	return in;
 }
 std::ostream& operator<< (std::ostream& out, const Road& rhs) {
@@ -213,8 +212,6 @@ std::istream& operator>> (std::istream& in, Way<TVertex, TEdge, TEqual>& rhs) {
 
 	return in;
 }
-
-
 template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
 std::ostream& operator<< (std::ostream& out, const Way<TVertex, TEdge, TEqual>& rhs) {
 	std::cout << "First vertex: ";
@@ -226,14 +223,6 @@ std::ostream& operator<< (std::ostream& out, const Way<TVertex, TEdge, TEqual>& 
 	return out;
 }
 
-template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
-class Graph {
-
-};
-
-
-
-
 template<>
 struct std::equal_to<City>
 {
@@ -242,7 +231,6 @@ struct std::equal_to<City>
 		return (lhs.GetCityName() == rhs.GetCityName()) && rhs.GetCountPeople() == rhs.GetCountPeople();
 	}
 };
-
 template<>
 struct std::equal_to<Road>
 {
@@ -252,4 +240,24 @@ struct std::equal_to<Road>
 			lhs.GetWeight() == rhs.GetWeight();
 	}
 };
+
+
+
+
+/*
+	summary
+
+	/summary
+*/
+
+template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
+class Graph {
+private:
+	std::vector<Way<TVertex, TEdge>> _ways;
+
+public:
+	Graph() {};
+};
+
+
 
