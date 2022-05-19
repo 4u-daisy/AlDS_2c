@@ -90,7 +90,7 @@ private:
 
 public:
 	Road() : _weight(0), _priceRoad(0), _roadType(asphalt), _nameRoad("Samara") {};
-	Road(const double weight, const double pricaRoad, const RoadType roadType, 
+	Road(const double weight, const double pricaRoad, const RoadType roadType = asphalt,
 							  const std::string nameRoad = "Samara") : _weight(weight),
 							  _priceRoad(pricaRoad), _roadType(roadType), _nameRoad(nameRoad) {};
 	Road(const Road& rhs) {
@@ -250,6 +250,22 @@ struct std::equal_to<Road>
 	}
 };
 
+template<typename TEdge>
+struct Selector {
+	double operator()(const TEdge& edge) const {
+		return static_cast<double>(edge);
+	}
+};
+template<>
+struct Selector<Road> {
+	double operator()(const Road& edge) const {
+		return edge.GetCost();
+	}
+
+};
+
+
+
 
 /*
 	summary
@@ -313,20 +329,28 @@ public:
 
 	bool AddEdge(const Way<>& way) {
 		_way.push_back(way);
-		if (!FindVertex(way.GetFirstVertex()))
+		if (!FindVertex(way.GetFirstVertex())) {
 			_vertices.push_back(way.GetFirstVertex());
-		if (!FindVertex(way.GetSecondVertex()))
+			_size++;
+		}
+		if (!FindVertex(way.GetSecondVertex())) {
 			_vertices.push_back(way.GetSecondVertex());
+			_size++;
+		}
 		return true;
 	}
 	bool AddEdge(const TVertex& vertexFirst, const TVertex& vertexSecond) {
 		TEqual equal;
 		if (equal(vertexFirst, vertexSecond)) return false;
 		_way.push_back(Way<>(vertexFirst, vertexSecond, TEdge()));
-		if (!FindVertex(vertexFirst))
+		if (!FindVertex(vertexFirst)) {
 			_vertices.push_back(vertexFirst);
-		if (!FindVertex(vertexSecond))
+			_size++;
+		}
+		if (!FindVertex(vertexSecond)) {
 			_vertices.push_back(vertexSecond);
+			_size++;
+		}
 		return true;
 	}
 
@@ -353,7 +377,12 @@ public:
 		return -1;
 	}
 
-	template<class Selector>
+	template<class Selector = Road>
+	double GetDoubleSelector(const Road& road) {
+		double cost = Selector()(road);
+		return cost;
+	}
+
 	bool FillMatrix() {
 		_matr.resize(_size);		// Create zero matrix
 		for (int i = 0; i < _size; i++) {
@@ -361,12 +390,11 @@ public:
 			std::fill(_matr[i].begin(), _matr[i].end(), 0);
 		}
 
-		//double a = Selector(_way[0][0]);
-
 		for (auto i = 0; i < _way.size(); i++) {
 			int idFirstVertex = GetIdByVertex(_way[i].GetFirstVertex());
 			int idSecondVertex = GetIdByVertex(_way[i].GetSecondVertex());
-			_matr[idFirstVertex][idSecondVertex] = Selector(_way[i].GetEdge());
+			double a = GetDoubleSelector<Selector<Road>>(_way[i].GetEdge());
+			_matr[idFirstVertex][idSecondVertex] = a;
 		}
 
 		return true;
@@ -374,28 +402,19 @@ public:
 
 	bool ImagineMatrix() const {
 		for (auto i = 0; i < _size; i++) {
+			std::cout << "	" << _vertices[i].GetCityName() << " ";
+		}
+		std::cout << "\n";
+		for (auto i = 0; i < _size; i++) {
+			std::cout << _vertices[i].GetCityName() << " ";
 			for (auto j = 0; j < _size; j++) {
 				std::cout << _matr[i][j] << "	";
 			}
 			std::cout << "\n";
 		}
+		return true;
 	}
 
-
-};
-
-
-template<typename TEdge>
-struct Selector {
-	double operator()(const TEdge& edge) {
-		return static_cast<double>(edge);
-	}
-};
-template<>
-struct Selector<Road> {
-	double operator()(const Road& edge) {
-		return edge.GetCost();
-	}
 
 };
 
