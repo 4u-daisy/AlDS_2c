@@ -509,8 +509,9 @@ public:
 	bool RemoveWay(const TVertex& vertex) {
 		TEqual equal;
 		for (auto i = 0; i < _way.size(); i++) {
-			if (equal(vertex, _way[i].GetFirstVertex()) || equal(vertex, _way[i].GetSecondVertex())) {
+			if (equal(vertex, _way[i].GetSource()) || equal(vertex, _way[i].GetDestination())) {
 				_way.erase(_way.begin() + i);
+				i--;
 			}
 		}
 
@@ -520,15 +521,19 @@ public:
 		int id = GetIdByVertex(vertex);
 		if (id == -1)
 			return false;
-		_vertices.erase(_vertices.begin() + id, _vertices.begin() + id + 1);
+		_vertices.erase(_vertices.begin() + id);
+		_size--;
 		return RemoveWay(vertex);
 	}
 	bool RemoveEdge(const TEdge& edge) {
 		TEqualEdge equal;
 		for (auto i = 0; i < _way.size(); i++) {
-			if (equal(_way[i].GetEdge(), edge))
-				_way.erase(_way.begin() + i, _way.begin() + i + 1);
+			if (equal(_way[i].GetEdge(), edge) || equal(edge, _way[i].GetEdge())) {
+				_way.erase(_way.begin() + i);
+				i--;
+			}
 		}
+		return true;
 	}
 
 
@@ -556,12 +561,14 @@ public:
 		/summary
 	*/
 	void DepthFirstSearch(const int from) const {
+		FillMatrix();
 		std::vector<int> used(_size);
 		std::fill(used.begin(), used.end(), 0);
 		
 		DepthFirstSearch(GetVertexById(from), used);
 	}
 	std::vector<std::pair<int, int>> BreadthFirstSearch(const TVertex& from, const int count = INT_MAX) const {
+		FillMatrix();
 		std::vector<std::pair<int, int>> res;
 		std::vector<bool> used(_size);
 		std::fill(used.begin(), used.end(), false);
@@ -596,6 +603,7 @@ public:
 		/summary
 	*/
 	std::vector<int> BellmanFord(const TVertex& start, const TVertex& end) const {
+		FillMatrix();
 		return BellmanFord(GetIdByVertex(start), GetIdByVertex(end));
 	}
 
