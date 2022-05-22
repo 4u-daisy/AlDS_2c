@@ -8,8 +8,6 @@
 
 // TO DO SPLIT INTO 4 FILES
 
-// TO DO ADD ITERATORS FOR GRAPH
-
 // TO DO BELLAN-FORD AND REMOVE EDGE/VERTEX
 
 #pragma once
@@ -25,32 +23,28 @@
 class City {
 private:
 	std::string _cityName;
-	unsigned int _countOfPeople;
+	size_t _countPeople;
 
 public:
-	City() : _cityName("defaultName"), _countOfPeople(0) {};
-	City(const std::string cityName, const  int countPeople) : _cityName(cityName),
-															   _countOfPeople(countPeople) {};
+	City() : _cityName("defaultName"), _countPeople(0) {};
+	City(const std::string cityName, const size_t countPeople) : _cityName(cityName),
+		_countPeople(countPeople) {};
 	City(const City& city) {
 		_cityName = city._cityName;
-		_countOfPeople = city._countOfPeople;
+		_countPeople = city._countPeople;
 	}
 
 	std::string GetCityName() const { return _cityName; }
-	unsigned int GetCountPeople() const { return _countOfPeople; }
+	size_t GetCountPeople() const { return _countPeople; }
 
 	void SetCityName(const std::string newName) { _cityName = newName; }
-	void SetCountOfPeople(const unsigned int newCount) { _countOfPeople = newCount; }
-
-	//bool operator==(const City& rhs) const {
-	//	return _cityName == rhs._cityName && _countOfPeople && rhs._countOfPeople;
-	//}
+	void SetCountOfPeople(const size_t newCount) { _countPeople = newCount; }
 
 	City& operator= (const City& rhs) {
 		if (this == &rhs)
 			return *this;
 		_cityName = rhs._cityName;
-		_countOfPeople = rhs._countOfPeople;
+		_countPeople = rhs._countPeople;
 		return *this;
 	}
 
@@ -116,10 +110,6 @@ public:
 	void SetRoadType(const RoadType roadType) { _roadType = roadType; }
 	void SetNameRoad(const std::string nameRoad) { _nameRoad = nameRoad; }
 
-	double GetCost() const {
-		return _roadType * 0 + _priceRoad * 0 + _weight * 1;
-	}
-
 	Road& operator=(const Road& rhs) {
 		if (this == &rhs)
 			return *this;
@@ -147,11 +137,11 @@ std::istream& operator>> (std::istream& in, Road& rhs) {
 	rhs.SetPriceRoad(priceRoad);
 	rhs.SetWeight(weight);
 
-	if (roadType == 1)
+	if (roadType == 0)
 		rhs.SetRoadType(asphalt);
-	if (roadType == 2)
+	else if (roadType == 1)
 		rhs.SetRoadType(priming);
-	if (roadType == 3)
+	else
 		rhs.SetRoadType(earth);
 
 	return in;
@@ -174,45 +164,45 @@ std::ostream& operator<< (std::ostream& out, const Road& rhs) {
 */
 
 template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
-class Way {
-	TVertex _from;
-	TVertex _where;
+class Path {
+	TVertex _source;
+	TVertex _destination;
 	TEdge _edge;
 
 public:
-	Way() : _from(TVertex()), _where(TVertex()), _edge(TEdge()) {};
-	Way(const TVertex from, const TVertex whereVertex, const TEdge edge) : _from(from), 
-														_where(whereVertex), _edge(edge) {};
+	Path() : _source(TVertex()), _destination(TVertex()), _edge(TEdge()) {};
+	Path(const TVertex from, const TVertex whereVertex, const TEdge edge) : _source(from), 
+														_destination(whereVertex), _edge(edge) {};
 
-	TVertex GetFirstVertex() const { return _from; }
-	TVertex GetSecondVertex() const { return _where; }
+	TVertex GetSource() const { return _source; }
+	TVertex GetDestination() const { return _destination; }
 	TEdge GetEdge() const { return _edge; }
 
-	void SetFirstVertex(TVertex from) { _from = from; }
-	void SetSecondVertex(TVertex whereVertex) { _where = whereVertex; }
+	void SetSource(TVertex from) { _source = from; }
+	void SetDestination(TVertex whereVertex) { _destination = whereVertex; }
 	void SetEdge(TEdge edge) { _edge = edge; }
 
-	Way& operator=(const Way& rhs) {
+	Path& operator=(const Path& rhs) {
 		if (this == &rhs)
 			return *this;
-		_from = rhs._from;
-		_where = rhs._where;
+		_source = rhs._source;
+		_destination = rhs._destination;
 		_edge = rhs._edge;
 		return *this;
 	}
 
-	bool operator==(const Way& rhs) const {
+	bool operator==(const Path& rhs) const {
 		TEqual equal;
-		return equal(_from, rhs._from) && equal(_where, rhs._where);
+		return equal(_source, rhs._source) && equal(_destination, rhs._destination);
 	}
-	bool operator!=(const Way& rhs) const {
+	bool operator!=(const Path& rhs) const {
 		return !(this == rhs);
 	}
 
 };
 
 template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
-std::istream& operator>> (std::istream& in, Way<TVertex, TEdge, TEqual>& rhs) {
+std::istream& operator>> (std::istream& in, Path<TVertex, TEdge, TEqual>& rhs) {
 	TVertex a, b;
 	TEdge e;
 
@@ -223,18 +213,18 @@ std::istream& operator>> (std::istream& in, Way<TVertex, TEdge, TEqual>& rhs) {
 	std::cout << "Edge: ";
 	in >> e;
 
-	rhs.SetFirstVertex(a);
-	rhs.SetSecondVertex(b);
+	rhs.SetSource(a);
+	rhs.SetDestination(b);
 	rhs.SetEdge(e);
 
 	return in;
 }
 template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to<TVertex>>
-std::ostream& operator<< (std::ostream& out, const Way<TVertex, TEdge, TEqual>& rhs) {
+std::ostream& operator<< (std::ostream& out, const Path<TVertex, TEdge, TEqual>& rhs) {
 	std::cout << "First vertex: ";
-	out << rhs.GetFirstVertex();
+	out << rhs.GetSource();
 	std::cout << "\nSecond vertex: ";
-	out << rhs.GetSecondVertex();
+	out << rhs.GetDestination();
 	std::cout << "\nEdge: ";
 	out << rhs.GetEdge();
 	return out;
@@ -268,13 +258,12 @@ struct Selector {
 template<>
 struct Selector<Road> {
 	double operator()(const Road& edge) const {
-		return edge.GetCost();
+		return edge.GetWeight() + edge.GetRoadType() * 1 + edge.GetPricaRoad() * 1;
 	}
-
 };
 
 
-std::vector<Way<City, Road>> ReadFromFileWays(std::string fileName);
+std::vector<Path<City, Road>> ReadFromFileWays(std::string fileName);
 
 /*
 	summary
@@ -293,10 +282,16 @@ template <class TVertex = City, class TEdge = Road, class TEqual = std::equal_to
 class Graph {
 private:
 	std::vector<TVertex> _vertices;
-	std::vector<Way<TVertex, TEdge>> _way;
+	std::vector<Path<TVertex, TEdge>> _way;
 	size_t _size;
 
 	std::vector<std::vector<double>> _matr;
+
+	TVertex GetVertexById(const int id) const {
+		if (id >= _size)
+			throw(std::logic_error(""));
+		return _vertices[id];
+	}
 
 	void DepthFirstSearch(const TVertex& from, std::vector<int>& used) const {
 		auto _matrIndex = GetIdByVertex(from);
@@ -324,30 +319,33 @@ private:
 		return -1;
 	}
 
-	/*
-	summary
-	Fill graph matrix
-	/summary
-*/
-	bool FillMatrix() {
-		if (!_matr.empty()) {
-			for (auto i = 0; i < _matr.size(); i++) {
-				_matr[i].clear();
-			}
-			_matr.clear();
+	void ClearMatrix() {
+		for (auto i = 0; i < _matr.size(); i++) {
+			_matr[i].clear();
 		}
+		_matr.clear();
+	}
+
+	/*
+		summary
+		Fill graph matrix
+		/summary
+	*/
+	template<class WeightSelector = Selector<TEdge>>
+	bool FillMatrix() {
+		if (!_matr.empty()) ClearMatrix();
 
 		_matr.resize(_size);		// Create zero matrix
 		for (auto i = 0; i < _size; i++) {
 			_matr[i].resize(_size);
 			std::fill(_matr[i].begin(), _matr[i].end(), INFINITY);
 			_matr[i][i] = 0;
-
 		}
 		for (auto i = 0; i < _way.size(); i++) {
-			auto idFirstVertex = GetIdByVertex(_way[i].GetFirstVertex());
-			auto idSecondVertex = GetIdByVertex(_way[i].GetSecondVertex());
-			auto a = GetDoubleSelector<Selector<Road>>(_way[i].GetEdge());
+			WeightSelector convert;
+			auto idFirstVertex = GetIdByVertex(_way[i].GetSource());
+			auto idSecondVertex = GetIdByVertex(_way[i].GetDestination());
+			auto a = convert(_way[i].GetEdge());
 			_matr[idFirstVertex][idSecondVertex] = a;
 		}
 
@@ -399,10 +397,40 @@ private:
 		return res;
 	}
 
+	std::vector<int> BellmanFord(const int start, const int end) const {
+		auto verticesCount = _size;
+
+		std::vector<double> resCostWay(verticesCount);
+		std::vector<double> labels;
+		std::vector<int> previous(verticesCount);
+
+		std::fill(resCostWay.begin(), resCostWay.end(), INFINITY);
+		std::fill(previous.begin(), previous.end(), -1);
+		previous[start] = 0;
+
+		resCostWay[start] = 0.0;
+
+		for (auto k = 0; k < verticesCount; k++) {
+			for (auto i = 0; i < verticesCount; i++) {
+				for (auto j = 0; j < verticesCount; j++) {
+					labels.push_back(resCostWay[j] + _matr[j][i]);
+				}
+				auto r = MinimimOfArray(labels);
+				if (resCostWay[i] > r.first) {
+					resCostWay[i] = r.first;
+					previous[i] = r.second;
+				}
+				labels.clear();
+			}
+		}
+
+		std::cout << resCostWay[end] << "\n";
+		return PathRecovery(previous, start, end);
+	}
 
 public:
 	Graph(): _size(0) {};
-	Graph(const std::vector<Way<TVertex, TEdge>> ways, const std::vector<TVertex> vertices, 
+	Graph(const std::vector<Path<TVertex, TEdge>> ways, const std::vector<TVertex> vertices, 
 		  const size_t size) : _way(ways), _size(size), _vertices(vertices) {};
 
 	Graph(const Graph& rhs) {
@@ -412,19 +440,14 @@ public:
 	}
 
 	void ReadFromFile() {
-		std::vector<Way<City, Road>> b = ReadFromFileWays(std::string("test.txt"));
+		std::vector<Path<City, Road>> b = ReadFromFileWays(std::string("test.txt"));
 		for (int i = 0; i < b.size(); i++) {
 			AddEdge(b[i]);
 		}
 	}
 
-	std::vector<Way<TVertex, TEdge>> GetWay() const { return _way; }
+	std::vector<Path<TVertex, TEdge>> GetWay() const { return _way; }
 	size_t GetSize() const { return _size; }
-	TVertex GetVertexById(const int id) const {
-		if (id >= _size)
-			throw(std::logic_error(""));
-		return _vertices[id];
-	}
 
 	bool FindVertex(const TVertex& vertex) const {
 		/*
@@ -437,7 +460,7 @@ public:
 		}
 		return false;
 	}
-	bool FindEdge(const Way<>& way) const {
+	bool FindEdge(const Path<>& way) const {
 		TEqualEdge equal;
 		for (auto i = 0; i < _way.size(); i++) {
 			if (equal(way, _way[i]))
@@ -456,14 +479,14 @@ public:
 		return true;
 	}
 
-	bool AddEdge(const Way<>& way) {
+	bool AddEdge(const Path<>& way) {
 		_way.push_back(way);
-		if (!FindVertex(way.GetFirstVertex())) {
-			_vertices.push_back(way.GetFirstVertex());
+		if (!FindVertex(way.GetSource())) {
+			_vertices.push_back(way.GetSource());
 			_size++;
 		}
-		if (!FindVertex(way.GetSecondVertex())) {
-			_vertices.push_back(way.GetSecondVertex());
+		if (!FindVertex(way.GetDestination())) {
+			_vertices.push_back(way.GetDestination());
 			_size++;
 		}
 		return true;
@@ -471,7 +494,7 @@ public:
 	bool AddEdge(const TVertex& vertexFirst, const TVertex& vertexSecond) {
 		TEqual equal;
 		if (equal(vertexFirst, vertexSecond)) return false;
-		_way.push_back(Way<>(vertexFirst, vertexSecond, TEdge()));
+		_way.push_back(Path<>(vertexFirst, vertexSecond, TEdge()));
 		if (!FindVertex(vertexFirst)) {
 			_vertices.push_back(vertexFirst);
 			_size++;
@@ -487,7 +510,7 @@ public:
 		TEqual equal;
 		for (auto i = 0; i < _way.size(); i++) {
 			if (equal(vertex, _way[i].GetFirstVertex()) || equal(vertex, _way[i].GetSecondVertex())) {
-				_way.erase(_way.begin() + i, _way.begin() + i + 1);
+				_way.erase(_way.begin() + i);
 			}
 		}
 
@@ -508,12 +531,6 @@ public:
 		}
 	}
 
-
-	template<class Selector = Road>
-	double GetDoubleSelector(const Road& road) {
-		double cost = Selector()(road);
-		return cost;
-	}
 
 	bool ImagineMatrix() {
 		FillMatrix();
@@ -570,7 +587,6 @@ public:
 		return res;
 	}
 
-
 	/*
 		summary
 		Implementation of the Bellman-Ford algorithm on a matrix
@@ -579,49 +595,15 @@ public:
 			end point (by index or TVertex)
 		/summary
 	*/
-	void BellmanFord(const TVertex& start, const TVertex& end) const {
-		BellmanFord(GetIdByVertex(start), GetIdByVertex(end));
+	std::vector<int> BellmanFord(const TVertex& start, const TVertex& end) const {
+		return BellmanFord(GetIdByVertex(start), GetIdByVertex(end));
 	}
-	void BellmanFord(const int start, const int end) const {
-		auto verticesCount = _size;
 
-		std::vector<double> resCostWay(verticesCount);
-		std::vector<double> labels;
-		std::vector<int> previous(verticesCount);
-
-		std::fill(resCostWay.begin(), resCostWay.end(), INFINITY);
-		std::fill(previous.begin(), previous.end(), -1);
-		previous[start] = 0;
-
-		resCostWay[start] = 0.0;
-
-		for (auto k = 0; k <= verticesCount - 1; k++) {
-			for (auto i = 0; i < verticesCount; i++) {
-				for (auto j = 0; j < verticesCount; j++) {
-					labels.push_back(resCostWay[j] + _matr[j][i]);
-				}
-				auto r = MinimimOfArray(labels);
-				if (resCostWay[i] > r.first) {
-					resCostWay[i] = r.first;
-					previous[i] = r.second;
-				}
-				labels.clear();
-			}
-		}
-
-		std::cout << resCostWay[end] << "\n";
-		PathRecovery(previous, start, end);
-	}
 };
 
 
 
-/*
-	ВОПРОС
-		а как красиво записать в файл ? Можно ли передавать поток ...
-
-*/
-bool WriteToFile(City& city, std::string fileName) {
+bool WriteToFile(const City& city, const std::string fileName) {
 	std::ofstream out(fileName, std::ios::app);
 
 	if (out.is_open())
@@ -632,9 +614,9 @@ bool WriteToFile(City& city, std::string fileName) {
 
 	return true;
 }
-City ReadFromFileCity(std::string fileName) {
+City ReadFromFileCity(const std::string fileName) {
 	std::string cityName;
-	unsigned int countOfPeople = 0;
+	size_t countOfPeople = 0;
 	std::ifstream in(fileName); // окрываем файл для чтения
 	if (in.is_open())
 	{
@@ -645,7 +627,7 @@ City ReadFromFileCity(std::string fileName) {
 	return City(cityName, countOfPeople);
 }
 
-bool WriteToFile(std::vector<City> cities, std::string fileName) {
+bool WriteToFile(const std::vector<City> cities, const std::string fileName) {
 	std::ofstream out(fileName, std::ios::app);
 
 	if (out.is_open())
@@ -659,7 +641,7 @@ bool WriteToFile(std::vector<City> cities, std::string fileName) {
 	return true;
 
 }
-std::vector<City> ReadFromFileCities(std::string fileName) {
+std::vector<City> ReadFromFileCities(const std::string fileName) {
 	std::vector<City> res;
 	std::string cityName;
 	unsigned int countOfPeople;
@@ -675,7 +657,7 @@ std::vector<City> ReadFromFileCities(std::string fileName) {
 	return res;
 }
 
-bool WriteToFile(std::vector<Road> roads, std::string fileName) {
+bool WriteToFile(const std::vector<Road> roads, const std::string fileName) {
 
 	std::ofstream out(fileName, std::ios::app);
 
@@ -718,7 +700,7 @@ std::vector<Road> ReadFromFileRoads(std::string fileName) {
 	return res;
 }
 
-bool WriteToFile(std::vector<Way<City, Road>> ways, std::string fileName) {
+bool WriteToFile(const std::vector<Path<City, Road>> ways, const std::string fileName) {
 
 	std::ofstream out(fileName);
 
@@ -729,8 +711,8 @@ bool WriteToFile(std::vector<Way<City, Road>> ways, std::string fileName) {
 		std::vector<Road> road;
 
 		for (auto i = 0; i < ways.size(); i++) {
-			cOne.push_back(ways[i].GetFirstVertex());
-			cTwo.push_back(ways[i].GetSecondVertex());
+			cOne.push_back(ways[i].GetSource());
+			cTwo.push_back(ways[i].GetDestination());
 			road.push_back(ways[i].GetEdge());
 		}
 		WriteToFile(cOne, "test0.txt");
@@ -742,8 +724,8 @@ bool WriteToFile(std::vector<Way<City, Road>> ways, std::string fileName) {
 	return true;
 
 }
-std::vector<Way<City, Road>> ReadFromFileWays(std::string fileName) {
-	std::vector<Way<City, Road>> res;
+std::vector<Path<City, Road>> ReadFromFileWays(const std::string fileName) {
+	std::vector<Path<City, Road>> res;
 
 	std::ifstream in(fileName); 
 	if (in.is_open())
@@ -753,7 +735,7 @@ std::vector<Way<City, Road>> ReadFromFileWays(std::string fileName) {
 		std::vector<Road> road = ReadFromFileRoads("test2.txt");
 		for (auto i = 0; i < road.size(); i++) {
 
-			res.push_back(Way<City, Road>(cOne[i], cTwo[i], road[i]));
+			res.push_back(Path<City, Road>(cOne[i], cTwo[i], road[i]));
 		}
 	}
 	in.close();
@@ -812,3 +794,10 @@ std::vector<Way<City, Road>> ReadFromFileWays(std::string fileName) {
 		return a;
 	}
 */
+
+//bool operator==(const City& rhs) const {
+//	return _cityName == rhs._cityName && _countOfPeople && rhs._countOfPeople;
+//}
+
+// TO DO ADD ITERATORS FOR GRAPH
+
