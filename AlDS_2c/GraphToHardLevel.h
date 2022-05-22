@@ -6,7 +6,9 @@
 #include <string>
 #include <stack>
 
-// TO DO: ADD ITERATORS FOR GRAPH
+// TO DO SPLIT INTO 4 FILES
+
+// TO DO ADD ITERATORS FOR GRAPH
 
 // TO DO BELLAN-FORD AND REMOVE EDGE/VERTEX
 
@@ -272,6 +274,8 @@ struct Selector<Road> {
 };
 
 
+std::vector<Way<City, Road>> ReadFromFileWays(std::string fileName);
+
 /*
 	summary
 		This is a graph class. Represented as a list of vertices and a list of all ways. 
@@ -405,6 +409,13 @@ public:
 		_way = rhs._way;
 		_vertices = rhs._vertices;
 		_size = rhs._size;
+	}
+
+	void ReadFromFile() {
+		std::vector<Way<City, Road>> b = ReadFromFileWays(std::string("test.txt"));
+		for (int i = 0; i < b.size(); i++) {
+			AddEdge(b[i]);
+		}
 	}
 
 	std::vector<Way<TVertex, TEdge>> GetWay() const { return _way; }
