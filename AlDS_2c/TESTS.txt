@@ -1,0 +1,129 @@
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+for code:	
+	City cityA("samara", 1185);
+	City cityB("kazan", 825);
+	City cityC("moscow", 1805);
+	City cityD("spb", 175);
+	City cityE("meow", 185);
+
+	Road roadA(3, 0);
+	Road roadB(6, 1);
+	Road roadC(2, 8);
+	Road roadD(7, 6);
+	Road roadE(2, 1);
+	Road roadF(4, 1);
+	Road roadG(9, 1);
+	Road roadH(3, 77);
+	Road roadI(9, 5);
+
+
+	Way<> wayA(cityA, cityB, roadA);
+	Way<> wayB(cityB, cityC, roadB);
+	Way<> wayC(cityA, cityE, roadC);
+	Way<> wayD(cityC, cityD, roadD);
+	Way<> wayE(cityB, cityE, roadE);
+	Way<> wayF(cityD, cityA, roadF);
+	Way<> wayG(cityD, cityC, roadG);
+	Way<> wayH(cityE, cityC, roadH);
+	Way<> wayI(cityB, cityA, roadI);
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+for file.txt:
+First 5429
+Second 8746
+Third 9841
+Fourth 25856
+Fifth 5823
+Sixth 9856
+Seventh 69526
+Eighth 9526
+Ninth 9552
+Tenth 145
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fileOne (city): (22)
+First 5429
+First 5429
+First 5429
+First 5429
+Second 8746
+Second 8746
+Second 8746
+Second 8746
+Second 8746
+Third 9841
+Fourth 25856
+Fourth 25856
+Fourth 25856
+Fourth 25856
+Fifth 5823
+Fifth 5823
+Fifth 5823
+Fifth 5823
+Fifth 5823
+Sixth 9856
+Sixth 9856
+Seventh 69526
+Seventh 69526
+~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~
+fileOne (city): (22)
+Sixth 9856
+Fifth 145
+Seventh 69526
+Second 8746
+Sixth 9856
+First 145
+Fourth 25856
+Fifth 5823
+Third 9841
+Sixth 9552
+First 9552
+Seventh 145
+First 5429
+Second 8746
+Sixth 9856
+Seventh 69526
+Second 9526
+Sixth 9552
+First 145
+Second 9526
+Third 9552
+Fifth 5823
+First 5429
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+for road: (22)
+Samara 1 0 33
+Samara 1 2 62
+Samara 8 1 22
+Samara 6 0 75
+Samara 1 1 27
+Samara 1 0 45
+Samara 1 0 94
+Samara 7 0 32
+Samara 5 1 91
+Samara 3 0 39
+Samara 1 1 67
+Samara 4 2 27
+Samara 1 0 73
+Samara 1 0 26
+Samara 1 2 48
+Samara 1 0 98
+Samara 3 1 32
+Samara 5 0 92
+Samara 1 1 38
+Samara 1 0 66
+Samara 8 1 26
+Samara 6 0 77
+Samara 1 2 21
+
+
+
+
+
+
+
+
+
+
+
