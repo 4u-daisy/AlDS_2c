@@ -351,3 +351,64 @@ stats ShakerSort(std::vector<T>& data) //n^2
     } while (left < right);
     return shaker;
 }
+
+/*
+    summary
+    Selection Sort
+    /summary
+*/
+template <class T, class TComparator = std::less<T>>
+stats SelectionSort(std::vector<T>& data) {
+    for (size_t i = 0; i < data.size() - 1; i++) {
+        size_t min_index = i;
+        for (int j = i + 1; j < data.size(); j++) {
+            if (TComparator()(data[j], data[min_index])) {
+                min_index = j;
+            }
+        }
+        std::swap(data[i], data[min_index]);
+    }
+}
+
+// TO DO
+
+void Heap_Sort(std::vector<int>& data, size_t root, size_t size, stats& heap)
+{
+    size_t largest = root;
+    size_t l = 2 * root + 1;
+    size_t r = 2 * root + 2;
+    heap.comparison_count++;
+    if ((l < size) && (data[l] > data[largest]))
+    {
+        largest = l;
+        heap.copy_count++;
+    }
+    heap.comparison_count++;
+    if ((r < size) && (data[r] > data[largest]))
+    {
+        largest = r;
+        heap.copy_count++;
+    }
+    heap.comparison_count++;
+    if (largest != root)
+    {
+        std::swap(data[root], data[largest]);
+        heap.copy_count++;
+        Heap_Sort(data, largest, size, heap);
+    }
+}
+stats Heap(std::vector<int>& data) //n*log(n)
+{
+    stats heap;
+    int size = int(data.size());
+    for (int i = size / 2 - 1; i >= 0; --i)
+        Heap_Sort(data, i, size, heap);
+    for (int i = size - 1; i > 0; i--)
+    {
+        std::swap(data[i], data[0]);
+        heap.copy_count++;
+        Heap_Sort(data, 0, i, heap);
+    }
+    
+    return heap;
+}

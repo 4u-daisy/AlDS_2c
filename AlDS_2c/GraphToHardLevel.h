@@ -2,8 +2,11 @@
 #include <vector>
 #include <queue>
 #include <string>
+#include <stack>
 
-//TO DO: ADD ITERATORS FOR GRAPH
+// TO DO: ADD ITERATORS FOR GRAPH
+
+// TO DO BELLAN-FORD AND REMOVE EDGE/VERTEX
 
 #pragma once
 
@@ -111,7 +114,7 @@ public:
 	void SetNameRoad(const std::string nameRoad) { _nameRoad = nameRoad; }
 
 	double GetCost() const {
-		return _roadType * 10 + _priceRoad * 10 + _weight * 100;
+		return _roadType * 0 + _priceRoad * 0 + _weight * 1;
 	}
 
 	Road& operator=(const Road& rhs) {
@@ -296,6 +299,11 @@ public:
 
 	std::vector<Way<TVertex, TEdge>> GetWay() const { return _way; }
 	size_t GetSize() const { return _size; }
+	TVertex GetVertexById(const int id) const {
+		if (id >= _size)
+			throw(std::logic_error(""));
+		return _vertices[id];
+	}
 
 	bool FindVertex(const TVertex& vertex) const {
 		/*
@@ -354,19 +362,6 @@ public:
 		return true;
 	}
 
-	//bool RemoveVertex(const TVertex& vertex) {
-	//	if (FindVertex(vertex))
-	//		return false;
-	//	
-	//}
-
-	//template<typename Selector>
-	//double Method(TEdge edge, Selector weightSelector) {
-	//	TEdge edge = …;
-	//	double weight = weightSelector(edge);
-	//	
-	//}
-
 	int GetIdByVertex(const TVertex& vertex) const {
 		TEqual equal;
 		for (auto i = 0; i < _size; i++) {
@@ -387,7 +382,9 @@ public:
 		_matr.resize(_size);		// Create zero matrix
 		for (int i = 0; i < _size; i++) {
 			_matr[i].resize(_size);
-			std::fill(_matr[i].begin(), _matr[i].end(), 0);
+			std::fill(_matr[i].begin(), _matr[i].end(), INFINITY);
+			_matr[i][i] = 0;
+
 		}
 
 		for (auto i = 0; i < _way.size(); i++) {
@@ -399,7 +396,6 @@ public:
 
 		return true;
 	}
-
 	bool ImagineMatrix() const {
 		for (auto i = 0; i < _size; i++) {
 			std::cout << "	" << _vertices[i].GetCityName() << " ";
@@ -415,7 +411,148 @@ public:
 		return true;
 	}
 
+	std::vector<int> GetNeighborVertex(const int index) const {
+		std::vector<int> a;
+		for (int i = 0; i < _size; i++) {
+			if (_matr[index][i] != INFINITY)
+				a.push_back(i);
+		}
+		return a;
+	}
 
+	void DepthInSearch(const TVertex& from, std::vector<int>& used) const {
+		int _matrIndex = GetIdByVertex(from);
+		if (used[_matrIndex] == 2)
+			return;
+
+		used[_matrIndex] = 2;		// 2 - обработана
+
+		for (int i = 0; i < _size; i++) {
+			if (_matr[_matrIndex][i] != 0) {	// то есть путь существует
+				if (used[i] != 2)
+					used[i] = 1;		// 1 - в обработке
+				const TVertex a = GetVertexById(i);
+				std::cout << "\n" << _matrIndex << "and " << i;
+				DepthInSearch(a, used);
+			}
+		}
+	}
+	std::vector<int>& DepthInSearch(const TVertex& from, const TVertex& _where, std::vector<int>& used,
+		std::vector<int>& res) const {
+		TEqual equal;
+		if (equal(from, _where))
+			return res;
+		int _matrIndex = GetIdByVertex(from);
+		if (used[_matrIndex] == 2)
+			return res;
+
+		used[_matrIndex] = 2;		// 2 - обработана
+		for (int i = 0; i < _size; i++) {
+			if (_matr[_matrIndex][i] != INFINITY) {	// то есть путь существует
+				if (used[i] != 2)
+					used[i] = 1;		// 1 - в обработке
+				const TVertex a = GetVertexById(i);
+				res.push_back(_matrIndex);
+				std::cout << "\n" << _matrIndex << "and " << i;
+				return DepthInSearch(a, _where, used, res);
+			}
+		}
+	}
+	std::vector<std::pair<int, int>> BreadthInSearch(const TVertex& from, const int count = 1000) const {
+		std::vector<std::pair<int, int>> res;
+		std::vector<bool> used(_size);
+		std::fill(used.begin(), used.end(), false);
+		std::queue<int> q;
+		q.push(GetIdByVertex(from));
+		used[GetIdByVertex(from)] = true;
+		int currentCount = 1;
+		while (!q.empty() && currentCount <= count) {
+			auto v = q.front();
+			q.pop();
+			for (int i = 0; i < _size; i++) {
+				if (currentCount == count)
+					return res;
+				if (_matr[v][i] != INFINITY && !used[i]) {
+					used[i] = true;
+					q.push(i);
+					std::pair<int, int> a(v, i);
+					res.push_back(a);
+				}
+
+			}
+			currentCount++;
+		}
+		return res;
+	}
+
+
+	std::pair<double, int> minOfArrayPAIR(std::vector<double> arr) {
+		double min = INFINITY;
+		int idMin = -1;
+		for (int i = 0; i < arr.size(); i++) {
+			if (min > arr[i]) {
+				min = arr[i];
+				idMin = i;
+			}
+		}
+		return std::pair<double, int>(min, idMin);
+	}
+	std::vector<int> RestoreWay(std::vector<int> v, int start, int end) {
+		std::vector<int> res;
+		res.push_back(end);
+		int pred = end;
+		while (pred != start) {
+			int predId = v[pred];
+			res.push_back(predId);
+			pred = predId;
+		}
+		std::reverse(res.begin(), res.end());
+
+		for (int i = 0; i < res.size(); i++) {
+			std::cout << res[i] << " ";
+		}
+
+		return res;
+
+	}
+
+	void BellmanFord(const TVertex& start, const TVertex& end) {
+		BellmanFord(GetIdByVertex(start), GetIdByVertex(end));
+	}
+
+	void BellmanFord(int start, int end) {
+		int verticesCount = _size;
+
+		std::vector<double> q(verticesCount);
+		std::vector<double> labels;
+		std::vector<int> preds(verticesCount);
+
+
+		std::fill(q.begin(), q.end(), INFINITY);
+		std::fill(preds.begin(), preds.end(), -1);
+		preds[start] = 0;
+
+
+		q[start] = 0.0;
+
+		for (int k = 0; k <= verticesCount - 1; k++) {
+			for (int i = 0; i < verticesCount; i++) {
+				for (int j = 0; j < verticesCount; j++) {
+					labels.push_back(q[j] + _matr[j][i]);
+				}
+				auto r = minOfArrayPAIR(labels);
+				if (q[i] > r.first) {
+					q[i] = r.first;
+					preds[i] = r.second;
+				}
+
+				labels.clear();
+			}
+		}
+
+		std::cout << q[end] << "\n";
+		RestoreWay(preds, start, end);
+	}
 };
 
 

@@ -44,8 +44,17 @@ int SearchMaxEven(const std::vector<T>& v) {
 	return id;
 }
 
+template<class T>
+void Shift(std::vector<T>& v) 
+{
+	T temp = v[v.size() - 1];
+	for (int i = v.size() - 1; i > 0; i--) 
+		v[i] = v[i - 1];
+	v[0] = temp;
+}
+
 template <typename T>
-std::vector<T> binary(const std::vector<T>& vec, const T value)
+std::vector<T> InterpolatingSearch(const std::vector<T>& vec, const T value)
 {
 	int left_side = 0, right_side = vec.size() - 1, mid;
 	while (vec[left_side] < value && vec[right_side] > value)
@@ -67,13 +76,4 @@ std::vector<T> binary(const std::vector<T>& vec, const T value)
 		}
 	}
 	return vec.end();
-}
-
-template<class T>
-void Shift(std::vector<T>& v) 
-{
-	T temp = v[v.size() - 1];
-	for (int i = v.size() - 1; i > 0; i--) 
-		v[i] = v[i - 1];
-	v[0] = temp;
 }
