@@ -294,6 +294,108 @@ private:
 
 	std::vector<std::vector<double>> _matr;
 
+	void DepthFirstSearch(const TVertex& from, std::vector<int>& used) const {
+		auto _matrIndex = GetIdByVertex(from);
+		if (used[_matrIndex] == 2)
+			return;
+
+		used[_matrIndex] = 2;
+		for (auto i = 0; i < _size; i++) {
+			if (_matr[_matrIndex][i] != 0) {
+				if (used[i] != 2)
+					used[i] = 1;
+				const TVertex a = GetVertexById(i);
+				std::cout << "\n" << _matrIndex << "and " << i;
+				DepthFirstSearch(a, used);
+			}
+		}
+	}
+	int GetIdByVertex(const TVertex& vertex) const {
+		TEqual equal;
+		for (auto i = 0; i < _size; i++) {
+			if (equal(_vertices[i], vertex))
+				return i;
+		}
+
+		return -1;
+	}
+
+	/*
+	summary
+	Fill graph matrix
+	/summary
+*/
+	bool FillMatrix() {
+		if (!_matr.empty()) {
+			for (auto i = 0; i < _matr.size(); i++) {
+				_matr[i].clear();
+			}
+			_matr.clear();
+		}
+
+		_matr.resize(_size);		// Create zero matrix
+		for (auto i = 0; i < _size; i++) {
+			_matr[i].resize(_size);
+			std::fill(_matr[i].begin(), _matr[i].end(), INFINITY);
+			_matr[i][i] = 0;
+
+		}
+		for (auto i = 0; i < _way.size(); i++) {
+			auto idFirstVertex = GetIdByVertex(_way[i].GetFirstVertex());
+			auto idSecondVertex = GetIdByVertex(_way[i].GetSecondVertex());
+			auto a = GetDoubleSelector<Selector<Road>>(_way[i].GetEdge());
+			_matr[idFirstVertex][idSecondVertex] = a;
+		}
+
+		return true;
+	}
+
+	/*
+		summary
+		Search for pairs of minimum values (weight, index)
+		/summary
+	*/
+	std::pair<double, int> MinimimOfArray(std::vector<double> arr) {
+		double min = INFINITY;   // auto - warning
+		auto idMin = -1;
+		for (auto i = 0; i < arr.size(); i++) {
+			if (min > arr[i]) {
+				min = arr[i];
+				idMin = i;
+			}
+		}
+		return std::pair<double, int>(min, idMin);
+	}
+
+	/*
+		summary
+		Path recovery from an array of shortest paths (for Bellman-Ford algorithm)
+		Input Data:
+			std::vector<int> - array of shortest paths
+			start point (by index)
+			end point (by index)
+		/summary
+	*/
+	std::vector<int> PathRecovery(std::vector<int> v, int start, int end) {
+		std::vector<int> res;
+		res.push_back(end);
+		auto pred = end;
+		while (pred != start) {
+			int predId = v[pred];
+			res.push_back(predId);
+			pred = predId;
+		}
+
+		std::reverse(res.begin(), res.end());
+
+		for (auto i = 0; i < res.size(); i++) {
+			std::cout << res[i] << " ";
+		}
+
+		return res;
+	}
+
+
 public:
 	Graph(): _size(0) {};
 	Graph(const std::vector<Way<TVertex, TEdge>> ways, const std::vector<TVertex> vertices, 
@@ -387,7 +489,6 @@ public:
 		_vertices.erase(_vertices.begin() + id, _vertices.begin() + id + 1);
 		return RemoveWay(vertex);
 	}
-
 	bool RemoveEdge(const TEdge& edge) {
 		TEqualEdge equal;
 		for (auto i = 0; i < _way.size(); i++) {
@@ -397,45 +498,14 @@ public:
 	}
 
 
-	int GetIdByVertex(const TVertex& vertex) const {
-		TEqual equal;
-		for (auto i = 0; i < _size; i++) {
-			if (equal(_vertices[i], vertex))
-				return i;
-		}
-
-		return -1;
-	}
-
 	template<class Selector = Road>
 	double GetDoubleSelector(const Road& road) {
 		double cost = Selector()(road);
 		return cost;
 	}
 
-	/*
-		summary
-		Fill graph matrix
-		/summary
-	*/
-	bool FillMatrix() {
-		_matr.resize(_size);		// Create zero matrix
-		for (auto i = 0; i < _size; i++) {
-			_matr[i].resize(_size);
-			std::fill(_matr[i].begin(), _matr[i].end(), INFINITY);
-			_matr[i][i] = 0;
-
-		}
-		for (auto i = 0; i < _way.size(); i++) {
-			auto idFirstVertex = GetIdByVertex(_way[i].GetFirstVertex());
-			auto idSecondVertex = GetIdByVertex(_way[i].GetSecondVertex());
-			auto a = GetDoubleSelector<Selector<Road>>(_way[i].GetEdge());
-			_matr[idFirstVertex][idSecondVertex] = a;
-		}
-
-		return true;
-	}
-	bool ImagineMatrix() const {
+	bool ImagineMatrix() {
+		FillMatrix();
 		std::cout << std::string(10, ' ') << '|';
 		for (auto i = 0; i < _size; i++) {
 			std::cout << std::setw(10) << _vertices[i].GetCityName() << "|";
@@ -452,57 +522,16 @@ public:
 		return true;
 	}
 
-	std::vector<int> GetNeighborVertex(const int index) const {
-		std::vector<int> a;
-		for (int i = 0; i < _size; i++) {
-			if (_matr[index][i] != INFINITY)
-				a.push_back(i);
-		}
-		return a;
-	}
-
 	/*
 		summary
 		Algorithms for traversing a graph represented by a matrix (DFS, BSF)
 		/summary
 	*/
-	void DepthFirstSearch(const TVertex& from, std::vector<int>& used) const {
-		auto _matrIndex = GetIdByVertex(from);
-		if (used[_matrIndex] == 2)
-			return;
-
-		used[_matrIndex] = 2;
-
-		for (auto i = 0; i < _size; i++) {
-			if (_matr[_matrIndex][i] != 0) {
-				if (used[i] != 2)
-					used[i] = 1;
-				const TVertex a = GetVertexById(i);
-				std::cout << "\n" << _matrIndex << "and " << i;
-				DepthFirstSearch(a, used);
-			}
-		}
-	}
-	std::vector<int> DepthFirstSearch(const TVertex& from, const TVertex& _where, std::vector<int>& used,
-		std::vector<int>& res) const {
-		TEqual equal;
-		if (equal(from, _where))
-			return res;
-		auto _matrIndex = GetIdByVertex(from);
-		if (used[_matrIndex] == 2)
-			return res;
-
-		used[_matrIndex] = 2;		// 2 - обработана
-		for (auto i = 0; i < _size; i++) {
-			if (_matr[_matrIndex][i] != INFINITY) {	// то есть путь существует
-				if (used[i] != 2)
-					used[i] = 1;		// 1 - в обработке
-				const TVertex a = GetVertexById(i);
-				res.push_back(_matrIndex);
-				std::cout << "\n" << _matrIndex << "and " << i;
-				return DepthFirstSearch(a, _where, used, res);
-			}
-		}
+	void DepthFirstSearch(const int from) const {
+		std::vector<int> used(_size);
+		std::fill(used.begin(), used.end(), 0);
+		
+		DepthFirstSearch(GetVertexById(from), used);
 	}
 	std::vector<std::pair<int, int>> BreadthFirstSearch(const TVertex& from, const int count = INT_MAX) const {
 		std::vector<std::pair<int, int>> res;
@@ -530,50 +559,6 @@ public:
 		return res;
 	}
 
-	/*
-		summary
-		Search for pairs of minimum values (weight, index)
-		/summary
-	*/
-	std::pair<double, int> MinimimOfArray(std::vector<double> arr) {
-		double min = INFINITY;   // auto - warning
-		auto idMin = -1;
-		for (auto i = 0; i < arr.size(); i++) {
-			if (min > arr[i]) {
-				min = arr[i];
-				idMin = i;
-			}
-		}
-		return std::pair<double, int>(min, idMin);
-	}
-
-	/*
-		summary
-		Path recovery from an array of shortest paths (for Bellman-Ford algorithm)
-		Input Data:
-			std::vector<int> - array of shortest paths
-			start point (by index)
-			end point (by index)
-		/summary
-	*/
-	std::vector<int> PathRecovery(std::vector<int> v, int start, int end) {
-		std::vector<int> res;
-		res.push_back(end);
-		auto pred = end;
-		while (pred != start) {
-			int predId = v[pred];
-			res.push_back(predId);
-			pred = predId;
-		}
-
-		std::reverse(res.begin(), res.end());
-
-		for (auto i = 0; i < res.size(); i++) {
-			std::cout << res[i] << " ";
-		}
-
-		return res;
-	}
 
 	/*
 		summary
@@ -583,10 +568,10 @@ public:
 			end point (by index or TVertex)
 		/summary
 	*/
-	void BellmanFord(const TVertex& start, const TVertex& end) {
+	void BellmanFord(const TVertex& start, const TVertex& end) const {
 		BellmanFord(GetIdByVertex(start), GetIdByVertex(end));
 	}
-	void BellmanFord(const int start, const int end) {
+	void BellmanFord(const int start, const int end) const {
 		auto verticesCount = _size;
 
 		std::vector<double> resCostWay(verticesCount);
@@ -620,6 +605,11 @@ public:
 
 
 
+/*
+	ВОПРОС
+		а как красиво записать в файл ? Можно ли передавать поток ...
+
+*/
 bool WriteToFile(City& city, std::string fileName) {
 	std::ofstream out(fileName, std::ios::app);
 
@@ -674,7 +664,6 @@ std::vector<City> ReadFromFileCities(std::string fileName) {
 	return res;
 }
 
-
 bool WriteToFile(std::vector<Road> roads, std::string fileName) {
 
 	std::ofstream out(fileName, std::ios::app);
@@ -717,7 +706,6 @@ std::vector<Road> ReadFromFileRoads(std::string fileName) {
 	in.close();
 	return res;
 }
-
 
 bool WriteToFile(std::vector<Way<City, Road>> ways, std::string fileName) {
 
@@ -773,3 +761,43 @@ std::vector<Way<City, Road>> ReadFromFileWays(std::string fileName) {
 //}
 
 
+/*
+	void DepthFirstSearch(const int from, const int _where) const {
+		std::vector<int> used(_size);
+		std::fill(used.begin(), used.end(), 0);
+		std::vector<int> res;
+		DepthFirstSearch(GetVertexById(from), GetVertexById(_where), used, res);
+	}
+	std::vector<int> DepthFirstSearch(const TVertex& from, const TVertex& _where, std::vector<int>& used,
+		std::vector<int>& res) const {
+		TEqual equal;
+		if (equal(from, _where))
+			return res;
+		auto _matrIndex = GetIdByVertex(from);
+		if (used[_matrIndex] == 2)
+			return res;
+
+		used[_matrIndex] = 2;		// 2 - обработана
+		for (auto i = 0; i < _size; i++) {
+			if (_matr[_matrIndex][i] != INFINITY) {	// то есть путь существует
+				if (used[i] != 2)
+					used[i] = 1;		// 1 - в обработке
+				const TVertex a = GetVertexById(i);
+				res.push_back(_matrIndex);
+				std::cout << "\n" << _matrIndex << "and " << i;
+				return DepthFirstSearch(a, _where, used, res);
+			}
+		}
+	}
+*/
+
+/*
+	std::vector<int> GetNeighborVertex(const int index) const {
+		std::vector<int> a;
+		for (int i = 0; i < _size; i++) {
+			if (_matr[index][i] != INFINITY)
+				a.push_back(i);
+		}
+		return a;
+	}
+*/
