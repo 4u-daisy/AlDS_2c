@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <vector>
 #include <queue>
 #include <string>
@@ -22,7 +24,6 @@ class City {
 private:
 	std::string _cityName;
 	unsigned int _countOfPeople;
-	std::vector<int> _roads;
 
 public:
 	City() : _cityName("defaultName"), _countOfPeople(0) {};
@@ -83,6 +84,7 @@ enum RoadType {
 	priming,
 	earth,
 };
+
 
 class Road {
 private:
@@ -369,6 +371,33 @@ public:
 		return true;
 	}
 
+	bool RemoveWay(const TVertex& vertex) {
+		TEqual equal;
+		for (auto i = 0; i < _way.size(); i++) {
+			if (equal(vertex, _way[i].GetFirstVertex()) || equal(vertex, _way[i].GetSecondVertex())) {
+				_way.erase(_way.begin() + i, _way.begin() + i + 1);
+			}
+		}
+
+		return true;
+	}
+	bool RemoveVertex(const TVertex& vertex) {
+		int id = GetIdByVertex(vertex);
+		if (id == -1)
+			return false;
+		_vertices.erase(_vertices.begin() + id, _vertices.begin() + id + 1);
+		return RemoveWay(vertex);
+	}
+
+	bool RemoveEdge(const TEdge& edge) {
+		TEqualEdge equal;
+		for (auto i = 0; i < _way.size(); i++) {
+			if (equal(_way[i].GetEdge(), edge))
+				_way.erase(_way.begin() + i, _way.begin() + i + 1);
+		}
+	}
+
+
 	int GetIdByVertex(const TVertex& vertex) const {
 		TEqual equal;
 		for (auto i = 0; i < _size; i++) {
@@ -409,13 +438,14 @@ public:
 	}
 	bool ImagineMatrix() const {
 		for (auto i = 0; i < _size; i++) {
-			std::cout << "	" << _vertices[i].GetCityName() << " ";
+			std::cout << std::setw(10) << _vertices[i].GetCityName();
+			std::cout << std::setfill('-');
 		}
 		std::cout << "\n";
 		for (auto i = 0; i < _size; i++) {
-			std::cout << _vertices[i].GetCityName() << " ";
+			std::cout << _vertices[i].GetCityName();
 			for (auto j = 0; j < _size; j++) {
-				std::cout << _matr[i][j] << "	";
+				std::cout << std::setw(10) << _matr[i][j];
 			}
 			std::cout << "\n";
 		}
@@ -441,12 +471,12 @@ public:
 		if (used[_matrIndex] == 2)
 			return;
 
-		used[_matrIndex] = 2;		// 2 - обработана
+		used[_matrIndex] = 2;
 
 		for (auto i = 0; i < _size; i++) {
-			if (_matr[_matrIndex][i] != 0) {	// то есть путь существует
+			if (_matr[_matrIndex][i] != 0) {
 				if (used[i] != 2)
-					used[i] = 1;		// 1 - в обработке
+					used[i] = 1;
 				const TVertex a = GetVertexById(i);
 				std::cout << "\n" << _matrIndex << "and " << i;
 				DepthFirstSearch(a, used);
@@ -506,7 +536,7 @@ public:
 		/summary
 	*/
 	std::pair<double, int> MinimimOfArray(std::vector<double> arr) {
-		double min = INFINITY;   // 
+		double min = INFINITY;   // auto - warning
 		auto idMin = -1;
 		for (auto i = 0; i < arr.size(); i++) {
 			if (min > arr[i]) {
@@ -516,6 +546,7 @@ public:
 		}
 		return std::pair<double, int>(min, idMin);
 	}
+
 	/*
 		summary
 		Path recovery from an array of shortest paths (for Bellman-Ford algorithm)
@@ -586,6 +617,151 @@ public:
 		PathRecovery(previous, start, end);
 	}
 };
+
+
+
+bool WriteToFile(City& city, std::string fileName) {
+	std::ofstream out(fileName, std::ios::app);
+
+	if (out.is_open())
+	{
+		out << city.GetCityName() << ' ' << city.GetCountPeople() << std::endl;
+	}
+	out.close();
+
+	return true;
+}
+City ReadFromFileCity(std::string fileName) {
+	std::string cityName;
+	unsigned int countOfPeople = 0;
+	std::ifstream in(fileName); // окрываем файл для чтения
+	if (in.is_open())
+	{
+		in >> cityName >> countOfPeople;
+	}
+	in.close();
+
+	return City(cityName, countOfPeople);
+}
+
+bool WriteToFile(std::vector<City> cities, std::string fileName) {
+	std::ofstream out(fileName, std::ios::app);
+
+	if (out.is_open())
+	{
+		for (auto i = 0; i < cities.size(); i++) {
+			out << cities[i].GetCityName() << ' ' << cities[i].GetCountPeople() << std::endl;
+		}
+	}
+	out.close();
+
+	return true;
+
+}
+std::vector<City> ReadFromFileCities(std::string fileName) {
+	std::vector<City> res;
+	std::string cityName;
+	unsigned int countOfPeople;
+	std::ifstream in(fileName); // окрываем файл для чтения
+	if (in.is_open())
+	{
+		while (in >> cityName >> countOfPeople)
+		{
+			res.push_back(City(cityName, countOfPeople));
+		}
+	}
+	in.close();
+	return res;
+}
+
+
+bool WriteToFile(std::vector<Road> roads, std::string fileName) {
+
+	std::ofstream out(fileName, std::ios::app);
+
+	if (out.is_open())
+	{
+		for (auto i = 0; i < roads.size(); i++) {
+			out << roads[i].getNameRoad() << ' ' << roads[i].GetPricaRoad() << ' ' << roads[i].GetRoadType() <<
+				' ' << roads[i].GetWeight() << std::endl;
+		}
+	}
+	out.close();
+
+	return true;
+
+}
+std::vector<Road> ReadFromFileRoads(std::string fileName) {
+	std::vector<Road> res;
+	double weight;
+	double priceRoad;
+	int roadType;
+	std::string nameRoad;
+
+	std::ifstream in(fileName); // окрываем файл для чтения
+	if (in.is_open())
+	{
+		while (in >> nameRoad >> priceRoad >> roadType >> weight)
+		{
+			Road tmp(weight, priceRoad);
+			tmp.SetNameRoad(nameRoad);
+			if (roadType == 0)
+				tmp.SetRoadType(asphalt);
+			if (roadType == 1)
+				tmp.SetRoadType(priming);
+			if (roadType == 2)
+				tmp.SetRoadType(earth);
+			res.push_back(tmp);
+		}
+	}
+	in.close();
+	return res;
+}
+
+
+bool WriteToFile(std::vector<Way<City, Road>> ways, std::string fileName) {
+
+	std::ofstream out(fileName);
+
+	if (out.is_open())
+	{
+		std::vector<City> cOne;
+		std::vector<City> cTwo;
+		std::vector<Road> road;
+
+		for (auto i = 0; i < ways.size(); i++) {
+			cOne.push_back(ways[i].GetFirstVertex());
+			cTwo.push_back(ways[i].GetSecondVertex());
+			road.push_back(ways[i].GetEdge());
+		}
+		WriteToFile(cOne, "test0.txt");
+		WriteToFile(cTwo, "test1.txt");
+		WriteToFile(road, "test2.txt");
+	}
+	out.close();
+
+	return true;
+
+}
+std::vector<Way<City, Road>> ReadFromFileWays(std::string fileName) {
+	std::vector<Way<City, Road>> res;
+
+	std::ifstream in(fileName); 
+	if (in.is_open())
+	{
+		std::vector<City> cOne = ReadFromFileCities("test0.txt");
+		std::vector<City> cTwo = ReadFromFileCities("test1.txt");
+		std::vector<Road> road = ReadFromFileRoads("test2.txt");
+		for (auto i = 0; i < road.size(); i++) {
+
+			res.push_back(Way<City, Road>(cOne[i], cTwo[i], road[i]));
+		}
+	}
+	in.close();
+	return res;
+}
+
+
 
 
 
