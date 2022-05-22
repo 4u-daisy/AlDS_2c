@@ -85,7 +85,6 @@ enum RoadType {
 	earth,
 };
 
-
 class Road {
 private:
 	double _weight;
@@ -437,18 +436,19 @@ public:
 		return true;
 	}
 	bool ImagineMatrix() const {
+		std::cout << std::string(10, ' ') << '|';
 		for (auto i = 0; i < _size; i++) {
-			std::cout << std::setw(10) << _vertices[i].GetCityName();
-			std::cout << std::setfill('-');
+			std::cout << std::setw(10) << _vertices[i].GetCityName() << "|";
 		}
-		std::cout << "\n";
+		std::cout << "\n" << std::string((_size + 1)*11, '-') << "\n";
 		for (auto i = 0; i < _size; i++) {
-			std::cout << _vertices[i].GetCityName();
+			std::cout << std::setw(10) << _vertices[i].GetCityName() << "|";
 			for (auto j = 0; j < _size; j++) {
-				std::cout << std::setw(10) << _matr[i][j];
+				std::cout << std::setw(10) << _matr[i][j] << "|";
 			}
 			std::cout << "\n";
 		}
+		std::cout << std::string((_size + 1) * 11, '-') << "\n";
 		return true;
 	}
 
