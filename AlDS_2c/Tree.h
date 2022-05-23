@@ -23,12 +23,13 @@ void InsertData(Tree<T>*& root, T value) {
 		root->_data = value;
 		return;
 	}
+
 	if (root->_data > value)
 		InsertData(root->_leftBranch, value);
 	else if (root->_data < value)
 		InsertData(root->_rightBranch, value);
 	else if (root->_data == value)
-		throw std::logic_error("Repeat Data");
+		std::cout << "\nRepeat\n";
 }
 
 template <class T>
@@ -110,4 +111,48 @@ bool ComprareTree(Tree<T>*& lhs, Tree<T>*& rhs) {
 
 	return lhs->_data == rhs->_data && ComprareTree(lhs->_leftBranch, rhs->_leftBranch) &&
 									   ComprareTree(lhs->_rightBranch, rhs->_rightBranch);
+}
+
+// descending 
+template <class T>
+void RootLeftRight(Tree<T>*& root) {
+	if (root == NULL)
+		return;
+
+	std::cout << root->_data << "   ";
+
+	PrintData(root->_leftBranch);
+	PrintData(root->_rightBranch);
+}
+
+// ascending
+template <class T>
+void LeftRightRoot(Tree<T>*& root) {
+	if (root == NULL)
+		return;
+
+	PrintData(root->_leftBranch);
+	PrintData(root->_rightBranch);
+	std::cout << root->_data << "   ";
+
+}
+template <class T>
+void Mix(Tree<T>*& root) {
+	if (root == NULL)
+		return;
+	PrintData(root->_leftBranch);
+	std::cout << root->_data << "   ";
+	PrintData(root->_rightBranch);
+}
+
+template <class T>
+Tree<T>* Search(Tree<T>*& root, T key) {
+
+	if (!root || root->_data == key) {
+		return root;
+	}
+	if (root->_data > key)
+		return Search(root->_leftBranch, key);
+	return Search(root->_rightBranch, key);
+
 }
