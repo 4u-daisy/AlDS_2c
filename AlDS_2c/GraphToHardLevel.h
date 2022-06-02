@@ -91,62 +91,39 @@ std::vector<Path<TVertex, TEdge, TEqual>> ReadFromFileWays(const std::string fil
 	/summary
 */
 
-struct ResBellman {
+template <class TVertex>
+struct ResultBellmanFord {
 	double _weight;
-	std::vector<int> _path;
+	std::vector<TVertex> _path;
 
-	ResBellman(const double w,const std::vector<int>& path) {
-		_weight = w;
+	ResultBellmanFord() {
+		_weight = 0;
+	}
+	ResultBellmanFord(const double weight, const std::vector<TVertex> path) {
+		_weight = weight;
 		_path = path;
 	}
 };
-
 template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 	class TEqualEdge = std::equal_to<TEdge>>
 	class Graph {
 	private:
 		std::vector<TVertex> _vertices;
 		std::vector<Path<TVertex, TEdge, TEqual>> _ways;
-		size_t _size;
 
-		std::vector<std::vector<double>> _matr;
 
 		TVertex GetVertexById(const int index) const {
 			if (index >= _vertices.size())
 				throw(std::logic_error(""));
 			return _vertices[index];
 		}
-
-		void DepthFirstSearch(const TVertex& from, std::vector<int>& used) const {
-			auto _matrIndex = GetIdByVertex(from);
-			if (used[_matrIndex] == 2)
-				return;
-
-			used[_matrIndex] = 2;
-			for (auto i = 0; i < _size; i++) {
-				if (_matr[_matrIndex][i] != 0) {
-					if (used[i] != 2)
-						used[i] = 1;
-					const TVertex a = GetVertexById(i);
-					std::cout << "\n" << _matrIndex << "and " << i;
-					DepthFirstSearch(a, used);
-				}
-			}
-		}
-		int GetIdByVertex(const TVertex& vertex) const {
+		int GetIndexByVertex(const TVertex& vertex) const {
 			TEqual equal;
-			for (auto i = 0; i < _size; i++) {
+			for (auto i = 0; i < _vertices.size(); i++) {
 				if (equal(_vertices[i], vertex))
 					return i;
 			}
 			return -1;
-		}
-
-		void ClearMatrix() {
-			for (auto i = 0; i < _matr.size(); i++) {
-				_matr[i].clear();
-			}
-			_matr.clear();
 		}
 
 		bool RemoveWay(const TVertex& vertex) {
@@ -160,48 +137,6 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 			return true;
 		}
 
-		/*
-			summary
-			Fill graph matrix
-			/summary
-		*/
-		template<class WeightSelector = Selector<TEdge>>
-		bool FillMatrix() {
-			if (!_matr.empty()) ClearMatrix();
-
-			_matr.resize(_size);		// Create zero matrix
-			for (auto i = 0; i < _size; i++) {
-				_matr[i].resize(_size);
-				std::fill(_matr[i].begin(), _matr[i].end(), INFINITY);
-				_matr[i][i] = 0;
-			}
-			for (auto i = 0; i < _ways.size(); i++) {
-				WeightSelector convert;
-				auto idFirstVertex = GetIdByVertex(_ways[i].GetSource());
-				auto idSecondVertex = GetIdByVertex(_ways[i].GetDestination());
-				auto a = convert(_ways[i].GetEdge());
-				_matr[idFirstVertex][idSecondVertex] = a;
-			}
-
-			return true;
-		}
-
-		/*
-			summary
-			Search for pairs of minimum values (weight, index)
-			/summary
-		*/
-		std::pair<double, int> MinimimOfArray(std::vector<double> arr) {
-			double min = INFINITY;  
-			auto indexMin = -1;
-			for (auto i = 0; i < arr.size(); i++) {
-				if (min > arr[i]) {
-					min = arr[i];
-					indexMin = i;
-				}
-			}
-			return std::pair<double, int>(min, indexMin);
-		}
 
 		/*
 			summary
@@ -212,50 +147,25 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 				end point (by index)
 			/summary
 		*/
-		std::vector<int> PathRecovery(std::vector<int> v, int start, int end) {
+		std::vector<TVertex> PathRecovery(std::vector<int> v, int start, int end) const {
 			std::vector<int> res;
 			res.push_back(end);
 			auto pred = end;
 			while (pred != start) {
-				int predId = v[pred];
+				auto predId = v[pred];
 				res.push_back(predId);
 				pred = predId;
 			}
 
-			std::reverse(res.begin(), res.end());
+			std::vector< TVertex> aaaaaa;
 
-			return res;
-		}
-
-		ResBellman BellmanFord(const int start, const int end) {
-			auto verticesCount = _size;
-
-			std::vector<double> resCostWay(verticesCount);
-			std::vector<double> labels;
-			std::vector<int> previous(verticesCount);
-
-			std::fill(resCostWay.begin(), resCostWay.end(), INFINITY);
-			std::fill(previous.begin(), previous.end(), -1);
-			previous[start] = 0;
-
-			resCostWay[start] = 0.0;
-
-			for (auto k = 1; k < verticesCount; k++) {
-				for (auto i = 0; i < verticesCount; i++) {
-					for (auto j = 0; j < verticesCount; j++) {
-						labels.push_back(resCostWay[j] + _matr[j][i]);
-					}
-					auto r = MinimimOfArray(labels);
-					if (resCostWay[i] > r.first) {
-						resCostWay[i] = r.first;
-						previous[i] = r.second;
-					}
-					labels.clear();
-				}
+			for (int i = res.size() - 1; i >= 0; i--) {
+				aaaaaa.push_back(_vertices[res[i]]);
 			}
 
-			return ResBellman(resCostWay[end], PathRecovery(previous, start, end));
+			return aaaaaa;
 		}
+
 
 		/*
 				std::cout << resCostWay[end] << "\n";
@@ -263,24 +173,18 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 		*/
 
 	public:
-		Graph() : _size(0) {};
+		Graph() = default;
 
-		void ReadFromFile() {
-			//std::vector<Path<TVertex, TEdge, TEqual>> b = ReadFromFileWays(std::string("test.txt"));
-			//for (int i = 0; i < b.size(); i++) {
-			//	AddEdge(b[i]);
-			//}
-		}
 
 		std::vector<Path<TVertex, TEdge, TEqual>> GetWay() const { return _ways; }
-		size_t GetSize() const { return _size; }
+		size_t GetSize() const { return _vertices.size(); }
 
 		bool FindVertex(const TVertex& vertex) const {
 			/*
 				TO DO		add std::find adding iterators
 			*/
 			TEqual equal;
-			for (auto i = 0; i < _size; i++) {
+			for (auto i = 0; i < _vertices.size(); i++) {
 				if (equal(_vertices[i], vertex))
 					return true;
 			}
@@ -301,7 +205,6 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 				return false;
 
 			_vertices.push_back(vertex);
-			_size++;
 			return true;
 		}
 
@@ -309,11 +212,9 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 			_ways.push_back(way);
 			if (!FindVertex(way.GetSource())) {
 				_vertices.push_back(way.GetSource());
-				_size++;
 			}
 			if (!FindVertex(way.GetDestination())) {
 				_vertices.push_back(way.GetDestination());
-				_size++;
 			}
 			return true;
 		}
@@ -323,21 +224,18 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 			_ways.push_back(Path<>(vertexFirst, vertexSecond, TEdge()));
 			if (!FindVertex(vertexFirst)) {
 				_vertices.push_back(vertexFirst);
-				_size++;
 			}
 			if (!FindVertex(vertexSecond)) {
 				_vertices.push_back(vertexSecond);
-				_size++;
 			}
 			return true;
 		}
 
 		bool RemoveVertex(const TVertex& vertex) {
-			int id = GetIdByVertex(vertex);
+			int id = GetIndexByVertex(vertex);
 			if (id == -1)
 				return false;
 			_vertices.erase(_vertices.begin() + id);
-			_size--;
 			return RemoveWay(vertex);
 		}
 		bool RemoveEdge(const TEdge& edge) {
@@ -352,60 +250,40 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 		}
 
 
-		bool ImagineMatrix() {
-			FillMatrix();
-			std::cout << std::string(10, ' ') << '|';
-			for (auto i = 0; i < _size; i++) {
-				std::cout << std::setw(10) << _vertices[i].GetCityName() << "|";
-			}
-			std::cout << "\n" << std::string((_size + 1) * 11, '-') << "\n";
-			for (auto i = 0; i < _size; i++) {
-				std::cout << std::setw(10) << _vertices[i].GetCityName() << "|";
-				for (auto j = 0; j < _size; j++) {
-					std::cout << std::setw(10) << _matr[i][j] << "|";
-				}
-				std::cout << "\n";
-			}
-			std::cout << std::string((_size + 1) * 11, '-') << "\n";
-			return true;
-		}
-
 		/*
 			summary
 			Algorithms for traversing a graph represented by a matrix (DFS, BSF)
 			/summary
 		*/
-		void DepthFirstSearch(const int from) const {
-			FillMatrix();
-			std::vector<int> used(_size);
+
+		std::vector<std::pair<TVertex, TVertex>> BreadthFirstSearch(const TVertex& source) const {
+			std::vector<std::pair<TVertex, TVertex>> res;
+
+			std::queue<TVertex> q;
+			q.push(source);
+
+			std::vector<int> used(_vertices.size());
 			std::fill(used.begin(), used.end(), 0);
 
-			DepthFirstSearch(GetVertexById(from), used);
-		}
-		std::vector<std::pair<int, int>> BreadthFirstSearch(const TVertex& from, const int count = INT_MAX) const {
-			FillMatrix();
-			std::vector<std::pair<int, int>> res;
-			std::vector<bool> used(_size);
-			std::fill(used.begin(), used.end(), false);
-			std::queue<int> q;
-			q.push(GetIdByVertex(from));
-			used[GetIdByVertex(from)] = true;
-			int currentCount = 1;
-			while (!q.empty() && currentCount <= count) {
-				auto v = q.front();
+			while (!q.empty()) {
+
+				TVertex v = q.front();
+				used[GetIndexByVertex(v)] = 2;
 				q.pop();
-				for (auto i = 0; i < _size; i++) {
-					if (currentCount == count)
-						return res;
-					if (_matr[v][i] != INFINITY && !used[i]) {
-						used[i] = true;
-						q.push(i);
-						std::pair<int, int> a(v, i);
-						res.push_back(a);
+
+				for (auto i = 0; i < _ways.size(); i++) {
+					auto indexDestinationVertex = GetIndexByVertex(_ways[i].GetDestination());
+
+					if (_ways[i].GetSource() == v && used[indexDestinationVertex] != 2) {
+						res.push_back(std::pair<TVertex, TVertex>(v, _ways[i].GetDestination()));
+						if (used[indexDestinationVertex] != 1) {
+							used[indexDestinationVertex] = 1;
+							q.push(_ways[i].GetDestination());
+						}
 					}
 				}
-				currentCount++;
 			}
+
 			return res;
 		}
 
@@ -417,9 +295,37 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 				end point (by index or TVertex)
 			/summary
 		*/
-		ResBellman BellmanFord(const TVertex& start, const TVertex& end) {
-			FillMatrix();
-			return BellmanFord(GetIdByVertex(start), GetIdByVertex(end));
+		template<class WeightSelector = Selector<TEdge>>
+		ResultBellmanFord<TVertex> BellmanFord(const TVertex& source, const TVertex& destination) const {
+			if (GetIndexByVertex(destination) == -1)	//если в графе такой вершины вообще нет
+				return ResultBellmanFord<TVertex>();
+			WeightSelector convert;
+			std::vector<int> minimalPaths(_vertices.size());
+			std::fill(minimalPaths.begin(), minimalPaths.end(), INT_MAX);
+			minimalPaths[GetIndexByVertex(source)] = 0;
+
+			std::vector<double> d(_vertices.size());	// d - rename
+			std::fill(d.begin(), d.end(), INFINITY); // d[v] = INFINITY;
+			d[GetIndexByVertex(source)] = 0;	// d[s] = 0;
+
+			for (auto i = 1; i < _vertices.size(); i++) {
+				for (auto j = 0; j < _ways.size(); j++) {
+					int tmpSource = GetIndexByVertex(_ways[j].GetSource());
+					int tmpDestination = GetIndexByVertex(_ways[j].GetDestination());
+					double weight = convert(_ways[j].GetEdge());
+
+					if (d[tmpDestination] > d[tmpSource] + weight) {
+						d[tmpDestination] = d[tmpSource] + weight;
+						minimalPaths[tmpDestination] = tmpSource;
+					}
+				}
+			}
+
+			if (d[GetIndexByVertex(destination)] == INFINITY)	// если пути не существует
+				return ResultBellmanFord<TVertex>();
+
+			return ResultBellmanFord<TVertex>(d[GetIndexByVertex(destination)], PathRecovery(minimalPaths,
+				GetIndexByVertex(source), GetIndexByVertex(destination)));
 		}
 
 };
@@ -622,226 +528,6 @@ struct Selector<Road> {
 };
 
 
-
-
-
-
-bool WriteToFile(const City& city, const std::string fileName) {
-	std::ofstream out(fileName, std::ios::app);
-
-	if (out.is_open())
-	{
-		out << city.GetCityName() << ' ' << city.GetCountPeople() << std::endl;
-	}
-	out.close();
-
-	return true;
-}
-City ReadFromFileCity(const std::string fileName) {
-	std::string cityName;
-	size_t countOfPeople = 0;
-	std::ifstream in(fileName); // окрываем файл дл€ чтени€
-	if (in.is_open())
-	{
-		in >> cityName >> countOfPeople;
-	}
-	in.close();
-
-	return City(cityName, countOfPeople);
-}
-
-bool WriteToFile(const std::vector<City> cities, const std::string fileName) {
-	std::ofstream out(fileName, std::ios::app);
-
-	if (out.is_open())
-	{
-		for (auto i = 0; i < cities.size(); i++) {
-			out << cities[i].GetCityName() << ' ' << cities[i].GetCountPeople() << std::endl;
-		}
-	}
-	out.close();
-
-	return true;
-
-}
-std::vector<City> ReadFromFileCities(const std::string fileName) {
-	std::vector<City> res;
-	std::string cityName;
-	unsigned int countOfPeople;
-	std::ifstream in(fileName); // окрываем файл дл€ чтени€
-	if (in.is_open())
-	{
-		while (in >> cityName >> countOfPeople)
-		{
-			res.push_back(City(cityName, countOfPeople));
-		}
-	}
-	in.close();
-	return res;
-}
-
-bool WriteToFile(const std::vector<Road> roads, const std::string fileName) {
-
-	std::ofstream out(fileName, std::ios::app);
-
-	if (out.is_open())
-	{
-		for (auto i = 0; i < roads.size(); i++) {
-			out << roads[i].getNameRoad() << ' ' << roads[i].GetPricaRoad() << ' ' << roads[i].GetRoadType() <<
-				' ' << roads[i].GetWeight() << std::endl;
-		}
-	}
-	out.close();
-
-	return true;
-
-}
-std::vector<Road> ReadFromFileRoads(std::string fileName) {
-	std::vector<Road> res;
-	double weight;
-	double priceRoad;
-	int roadType;
-	std::string nameRoad;
-
-	std::ifstream in(fileName); // окрываем файл дл€ чтени€
-	if (in.is_open())
-	{
-		while (in >> nameRoad >> priceRoad >> roadType >> weight)
-		{
-			Road tmp(weight, priceRoad);
-			tmp.SetNameRoad(nameRoad);
-			if (roadType == 0)
-				tmp.SetRoadType(asphalt);
-			if (roadType == 1)
-				tmp.SetRoadType(priming);
-			if (roadType == 2)
-				tmp.SetRoadType(earth);
-			res.push_back(tmp);
-		}
-	}
-	in.close();
-	return res;
-}
-
-//template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>>
-//std::vector<Path<TVertex, TEdge, TEqual>> ReadFromFileWays(const std::string fileName) {
-//	std::cout << "NO";
-//	return std::vector();
-//}
-
-std::vector<Path<City, Road>> ReadFromFileWays(const std::string fileName) {
-	std::vector<Path<City, Road>> res;
-
-	std::ifstream in(fileName);
-	if (in.is_open())
-	{
-		std::vector<City> cOne = ReadFromFileCities("test0.txt");
-		std::vector<City> cTwo = ReadFromFileCities("test1.txt");
-		std::vector<Road> road = ReadFromFileRoads("test2.txt");
-		for (auto i = 0; i < road.size(); i++) {
-
-			res.push_back(Path<City, Road>(cOne[i], cTwo[i], road[i]));
-		}
-	}
-	in.close();
-	return res;
-}
-
-
-//bool WriteToFile(const std::vector<Path<City, Road>> ways, const std::string fileName) {
-//
-//	std::ofstream out(fileName);
-//
-//	if (out.is_open())
-//	{
-//		std::vector<City> cOne;
-//		std::vector<City> cTwo;
-//		std::vector<Road> road;
-//
-//		for (auto i = 0; i < ways.size(); i++) {
-//			cOne.push_back(ways[i].GetSource());
-//			cTwo.push_back(ways[i].GetDestination());
-//			road.push_back(ways[i].GetEdge());
-//		}
-//		WriteToFile(cOne, "test0.txt");
-//		WriteToFile(cTwo, "test1.txt");
-//		WriteToFile(road, "test2.txt");
-//	}
-//	out.close();
-//
-//	return true;
-//
-//}
-//std::vector<Path<City, Road>> ReadFromFileWays(const std::string fileName) {
-//	std::vector<Path<City, Road>> res;
-//
-//	std::ifstream in(fileName); 
-//	if (in.is_open())
-//	{
-//		std::vector<City> cOne = ReadFromFileCities("test0.txt");
-//		std::vector<City> cTwo = ReadFromFileCities("test1.txt");
-//		std::vector<Road> road = ReadFromFileRoads("test2.txt");
-//		for (auto i = 0; i < road.size(); i++) {
-//
-//			res.push_back(Path<City, Road>(cOne[i], cTwo[i], road[i]));
-//		}
-//	}
-//	in.close();
-//	return res;
-//}
-//
-//
-//
-
-
-//template<typename TWeightSelector>
-//void Method(Е, TWeightSelector weightSelector) {
-//	TEdge edge = Е;
-//	double weight = weightSelector(edge);
-//	Е
-//}
-
-
-/*
-	void DepthFirstSearch(const int from, const int _where) const {
-		std::vector<int> used(_size);
-		std::fill(used.begin(), used.end(), 0);
-		std::vector<int> res;
-		DepthFirstSearch(GetVertexById(from), GetVertexById(_where), used, res);
-	}
-	std::vector<int> DepthFirstSearch(const TVertex& from, const TVertex& _where, std::vector<int>& used,
-		std::vector<int>& res) const {
-		TEqual equal;
-		if (equal(from, _where))
-			return res;
-		auto _matrIndex = GetIdByVertex(from);
-		if (used[_matrIndex] == 2)
-			return res;
-
-		used[_matrIndex] = 2;		// 2 - обработана
-		for (auto i = 0; i < _size; i++) {
-			if (_matr[_matrIndex][i] != INFINITY) {	// то есть путь существует
-				if (used[i] != 2)
-					used[i] = 1;		// 1 - в обработке
-				const TVertex a = GetVertexById(i);
-				res.push_back(_matrIndex);
-				std::cout << "\n" << _matrIndex << "and " << i;
-				return DepthFirstSearch(a, _where, used, res);
-			}
-		}
-	}
-*/
-
-/*
-	std::vector<int> GetNeighborVertex(const int index) const {
-		std::vector<int> a;
-		for (int i = 0; i < _size; i++) {
-			if (_matr[index][i] != INFINITY)
-				a.push_back(i);
-		}
-		return a;
-	}
-*/
 
 //bool operator==(const City& rhs) const {
 //	return _cityName == rhs._cityName && _countOfPeople && rhs._countOfPeople;
