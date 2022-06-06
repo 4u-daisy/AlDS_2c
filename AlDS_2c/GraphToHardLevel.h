@@ -328,7 +328,6 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 				GetIndexByVertex(source), GetIndexByVertex(destination)));
 		}
 
-
 		template<class WeightSelector = Selector<TEdge>>
 		ResultSearchPath<TVertex> Dijkstra(const TVertex& source, const TVertex& destination) const {
 			if (GetIndexByVertex(destination) == -1)	

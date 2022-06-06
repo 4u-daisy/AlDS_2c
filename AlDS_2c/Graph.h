@@ -1,8 +1,245 @@
 #include <vector>
 #include <iostream>
+#include <string>
 
 #pragma once
 
+/*
+	03.06
+
+	1. ќпределить среднее число ребер, исход€щее из списка смежности
+	2. –аспечатать в графе все вершины, имеющие петли
+	3. –аспечатать все "вис€чие" вершины в графе
+
+
+*/
+
+
+class Graph {
+
+	struct Edge { // ребро
+		float weight; // вес ребра
+		int vertex; // индекс вершины, в которую ведет ребро
+		Edge* next; // поле св€зи
+	};
+
+	struct Vertex { // вершина
+		std::string caption; // название вершины
+		Edge* edges; // список исход€щих ребер
+	};
+
+	Vertex* verts; // массив вершин
+	int size; // количество вершин
+
+
+
+	int TEST_TaskOne(const int index) const {
+		if (index < 0 && size <= index)
+			throw(std::logic_error("index out of range"));
+		
+		double count = 0;
+
+		for (int i = 0; i < size; i++) {
+			Edge* current = verts[i].edges;
+			while (current) {
+				if (current->vertex == index) {
+					count += current->weight;
+				}
+				current = current->next;
+
+			}
+		}
+
+		return count ;
+	}
+
+	void TEST_TaskTwo(const int v1, const int v2) const {
+
+		if (size == 0) 
+			throw "no elemenets";
+		Edge* tmp = verts[v1].edges;
+		while (tmp) {
+			if (tmp->vertex == v2) {
+				std::cout << tmp->weight << "\n";
+				tmp = tmp->next;
+			}
+			
+		}
+
+		tmp = verts[v2].edges;
+		while (tmp) {
+			if (tmp->vertex == v1) {
+				std::cout << tmp->weight << "\n";
+				tmp = tmp->next;
+			}
+
+		}
+	}
+
+	double TEST_TaskThree() const {
+
+		if (size == 0)
+			return 0;
+
+		size_t count = 0;
+
+		for (auto i = 0; i < count; i++) {
+			Edge* tmp = verts[i].edges;
+			while (tmp != NULL) {
+				count++;
+				tmp = tmp->next;
+			}
+		}
+		return (double)count / size;
+	}
+
+	int TEST_TaskFour() const {
+		if (size == 0)
+			return -1;
+
+		int count = 0;
+		for (auto i = 0; i < size; i++) {
+			Edge* tmp = verts[i].edges;
+			bool flag = true;
+			while (tmp != NULL) {
+				if (tmp->weight < 0) {
+					flag = false;
+					tmp = tmp->next;
+				}
+			}
+
+			if (flag)
+				count++;
+		}
+
+		return count;
+	}
+
+	void TEST_TaskFive() const {
+
+		if (size < 0)
+			return;
+		int min = INT_MAX;
+
+		for (auto i = 0; i < size; i++) {
+			int currentMin = 0;
+			Edge* current = verts[i].edges;
+
+			while (current) {
+				currentMin++;
+				current = current->next;
+			}
+
+			if (currentMin < min) {
+				min = currentMin;
+			}
+		}
+
+	}
+
+	void TEST_TaskSix(const int index) const {
+
+		if (size < 0)
+			return;
+		for (auto i = 0; i < size; i++) {
+
+			Edge* current = verts[i].edges;
+
+			while (current) {
+				if (current->vertex == index)
+					std::cout << current->weight << "\n";
+				current = current->next;
+			}
+
+		}
+
+	}
+
+	void TEST_TaskSeven() const {
+		if (size == 0)
+			return;
+
+		for (auto i = 0; i < size; i++) {
+			Edge* tmp = verts[i].edges;
+			while (tmp != NULL) {
+				if (tmp->weight < 0) {
+					std::cout << tmp->vertex;
+					break;
+				}
+			}
+
+		}
+
+	}
+
+	int TEST_TaskEight(const int index) const {
+		if (size == 0)
+			return -1;
+		int average = 0;
+		int size = 0;
+		Edge* tmp = verts[index].edges;
+		while (tmp != NULL) {
+			average += tmp->weight;
+			size++;
+		}
+		return (double)average / size;
+
+	}
+
+	int TEST_TaskNine(const int index) const {
+		if (index < 0 && size <= index)
+			throw(std::logic_error("index out of range"));
+
+		Edge* current = verts[index].edges;
+		int count = 0;
+		while (current) {
+			count += current->weight;
+			current = current->next;
+		}
+		return count;
+	}
+
+
+
+	void PrintTask2() const {
+		for (auto i = 0; i < size; i++) {
+			Edge* tmp = verts[i].edges;
+			while (tmp != NULL) {
+				if (i == tmp->vertex) {
+					std::cout << i << "\n";
+				}
+			}
+		}
+	}
+
+	void PrintTask3() const {
+		std::vector<int> res(size, 0);
+
+		for (auto i = 0; i < size; i++) {
+			Edge* tmp = verts[i].edges;
+			while (tmp != NULL) {
+				res[tmp->vertex]++;
+				tmp = tmp->next;
+			}
+		}
+
+		for (auto i = 0; i < res.size(); i++) {
+			if (res[i] == 1 && verts[i].edges == NULL)
+				std::cout << verts[i].caption;
+		}
+	}
+
+
+
+
+
+
+
+
+};
+
+
+/*
 struct Data {
 	int FirstIdVertex;
 	int SecondIdVertex;
@@ -13,7 +250,6 @@ struct Data {
 	Data(int weight, int firstIdVertex, int secondIdVertex) : _weight(weight), FirstIdVertex(firstIdVertex),
 																			SecondIdVertex(secondIdVertex) {};
 };
-
 class Edge {
 private:
 	Data _data;
@@ -54,7 +290,6 @@ public:
 	//int GetWeightById() const { return _data._weight; }
 
 };
-
 class Vertex {
 private:
 	std::vector<Edge> _arrayEdge;
@@ -107,7 +342,6 @@ public:
 	}
 
 };
-
 class Graph {
 private:
 	std::vector<Vertex> _arrayVertex;
@@ -208,7 +442,6 @@ public:
 		return true;
 	}
 
-
 	bool SearchWay(const int from, const int where) const {
 
 		if (from == where)
@@ -226,6 +459,7 @@ public:
 
 };
 
+*/
 /*9
 		if (from.GetId() == where.GetId())
 			return true;
