@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <fstream>
 #include <iomanip>
 #include <vector>
@@ -76,8 +76,7 @@ std::ostream& operator<< (std::ostream& out, const Path<TVertex, TEdge, TEqual>&
 	return out;
 }
 
-template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>>
-std::vector<Path<TVertex, TEdge, TEqual>> ReadFromFileWays(const std::string fileName);
+
 
 /*
 	summary
@@ -92,18 +91,19 @@ std::vector<Path<TVertex, TEdge, TEqual>> ReadFromFileWays(const std::string fil
 */
 
 template <class TVertex>
-struct ResultBellmanFord {
+struct ResultSearchPath {
 	double _weight;
 	std::vector<TVertex> _path;
 
-	ResultBellmanFord() {
+	ResultSearchPath() {
 		_weight = 0;
 	}
-	ResultBellmanFord(const double weight, const std::vector<TVertex> path) {
+	ResultSearchPath(const double weight, const std::vector<TVertex> path) {
 		_weight = weight;
 		_path = path;
 	}
 };
+
 template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 	class TEqualEdge = std::equal_to<TEdge>>
 	class Graph {
@@ -296,9 +296,9 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 			/summary
 		*/
 		template<class WeightSelector = Selector<TEdge>>
-		ResultBellmanFord<TVertex> BellmanFord(const TVertex& source, const TVertex& destination) const {
-			if (GetIndexByVertex(destination) == -1)	//���� � ����� ����� ������� ������ ���
-				return ResultBellmanFord<TVertex>();
+		ResultSearchPath<TVertex> BellmanFord(const TVertex& source, const TVertex& destination) const {
+			if (GetIndexByVertex(destination) == -1)	//если в графе такой вершины вообще нет
+				return ResultSearchPath<TVertex>();
 			WeightSelector convert;
 			std::vector<int> minimalPaths(_vertices.size());
 			std::fill(minimalPaths.begin(), minimalPaths.end(), INT_MAX);
@@ -321,14 +321,88 @@ template <class TVertex, class TEdge, class TEqual = std::equal_to<TVertex>,
 				}
 			}
 
-			if (d[GetIndexByVertex(destination)] == INFINITY)	// ���� ���� �� ����������
-				return ResultBellmanFord<TVertex>();
+			if (d[GetIndexByVertex(destination)] == INFINITY)	// если пути не существует
+				return ResultSearchPath<TVertex>();
 
-			return ResultBellmanFord<TVertex>(d[GetIndexByVertex(destination)], PathRecovery(minimalPaths,
+			return ResultSearchPath<TVertex>(d[GetIndexByVertex(destination)], PathRecovery(minimalPaths,
 				GetIndexByVertex(source), GetIndexByVertex(destination)));
 		}
 
+
+		template<class WeightSelector = Selector<TEdge>>
+		ResultSearchPath<TVertex> Dijkstra(const TVertex& source, const TVertex& destination) const {
+			if (GetIndexByVertex(destination) == -1)	
+				return ResultSearchPath<TVertex>();
+
+			std::vector<int> minimalPaths(_vertices.size());
+			std::fill(minimalPaths.begin(), minimalPaths.end(), INT_MAX);
+			minimalPaths[GetIndexByVertex(source)] = 0;
+
+			std::vector<double> d(_vertices.size());
+			std::fill(d.begin(), d.end(), INFINITY);
+
+			std::vector<bool> used(_vertices.size());
+			std::fill(used.begin(), used.end(), false);
+			WeightSelector convert;
+
+			d[GetIndexByVertex(source)] = 0;
+
+			for (int i = 0; i < _vertices.size(); i++) {
+				int v = -1;
+
+				for (int j = 0; j < _vertices.size(); j++) {
+					if (!used[j] && (v == -1 || d[j] < d[v]))
+						v = j;
+				}
+
+				if (0 > v && d[v] == INFINITY)
+					break;
+
+				used[v] = true;
+
+				for (int e = 0; e < _ways.size(); e++) {
+					TEqual equal;
+					if (!equal(GetVertexById(v), _ways[e].GetSource())) 
+						continue;
+					double weight = convert(_ways[e].GetEdge());
+					if (d[v] + weight < d[GetIndexByVertex(_ways[e].GetDestination())]) {
+						d[GetIndexByVertex(_ways[e].GetDestination())] = d[v] + weight;
+						minimalPaths[GetIndexByVertex(_ways[e].GetDestination())] = i;
+					}
+				}
+
+
+			}
+
+			if (d[GetIndexByVertex(destination)] == INFINITY)	// если пути не существует
+				return ResultSearchPath<TVertex>();
+
+			return ResultSearchPath<TVertex>(d[GetIndexByVertex(destination)], PathRecovery(minimalPaths,
+				GetIndexByVertex(source), GetIndexByVertex(destination)));
+		}
+
+
 };
+
+
+/*
+func dijkstra(s):
+	for v∈V
+		d[v] = ∞
+		used[v] = false
+	d[s] = 0
+	for i∈V
+		v = null
+		for j∈V                        // найдём вершину с минимальным расстоянием
+			if !used[j] and (v == null or d[j] < d[v])
+				v = j
+		if d[v] == ∞
+			break
+		used[v] = true
+		for e : исходящие из v рёбра     // произведём релаксацию по всем рёбрам, исходящим из v
+			if d[v] + e.len < d[e.to]
+				d[e.to] = d[v] + e.len
+*/
 
 /*
 	summary
